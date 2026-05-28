@@ -863,9 +863,51 @@ function loadFromText(){
   }catch{alert("형식이 올바르지 않아요.");}
 }
 
+const SUPA_URL="https://havjlvtpgqimgkgbblif.supabase.co";
+const SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhhdmpsdnRwZ3FpbWdrZ2JibGlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDg1NjMsImV4cCI6MjA5NTQ4NDU2M30.FZIJ_N07cui-todQjR1z5A5dyqae_Nq5Nw5Jrs4ViM4";
+
+async function syncToSupabase(){
+  try{
+    await fetch(`${SUPA_URL}/rest/v1/cheon_data?id=eq.main`,{
+      method:"PATCH",
+      headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":`Bearer ${SUPA_KEY}`,"Prefer":"return=minimal"},
+      body:JSON.stringify({data:db, updated_at:new Date().toISOString()})
+    });
+  }catch(e){console.log("sync error",e);}
+}
+
+async function loadFromSupabase(){
+  try{
+    const res=await fetch(`${SUPA_URL}/rest/v1/cheon_data?id=eq.main&select=data`,{
+      headers:{"apikey":SUPA_KEY,"Authorization":`Bearer ${SUPA_KEY}`}
+    });
+    const rows=await res.json();
+    if(rows&&rows[0]&&rows[0].data&&rows[0].data.p){
+      db=rows[0].data;
+      localStorage.setItem(KEY,JSON.stringify(db));
+      return true;
+    }
+  }catch(e){console.log("load error",e);}
+  return false;
+}
+
+// save 함수에 Supabase 동기화 추가
+const _sv=sv;
+function sv(){
+  _sv();
+  syncToSupabase();
+}
+
 // 초기 렌더
 initDayPickers();
-renderHome();
+(async()=>{
+  const loaded=await loadFromSupabase();
+  if(!loaded){
+    // Supabase에 데이터 없으면 localStorage에서 불러오기
+    db=(()=>{try{return JSON.parse(localStorage.getItem(KEY))||{p:[],logs:{},ms:{}};}catch{return{p:[],logs:{},ms:{}};}})();
+  }
+  renderHome();
+})();
 </script>
 </body>
 </html>
