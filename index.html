@@ -901,9 +901,13 @@ function sv(){
 // 초기 렌더
 initDayPickers();
 (async()=>{
-  const loaded=await loadFromSupabase();
-  if(!loaded){
-    // Supabase에 데이터 없으면 localStorage에서 불러오기
+  try{
+    const loaded=await loadFromSupabase();
+    if(!loaded){
+      db=(()=>{try{return JSON.parse(localStorage.getItem(KEY))||{p:[],logs:{},ms:{}};}catch{return{p:[],logs:{},ms:{}};}})();
+    }
+  }catch(e){
+    console.log("supabase init error",e);
     db=(()=>{try{return JSON.parse(localStorage.getItem(KEY))||{p:[],logs:{},ms:{}};}catch{return{p:[],logs:{},ms:{}};}})();
   }
   renderHome();
