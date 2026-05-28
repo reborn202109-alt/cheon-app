@@ -282,7 +282,10 @@ const MS=[
   {d:1000,e:"🧄",t:"사람이 되셨습니다.",s:"천일의 쑥과마늘을 다 드셨습니다.\n당신은 완전히 새로운 사람이에요."},
 ];
 let db=(()=>{try{return JSON.parse(localStorage.getItem(KEY))||{p:[],logs:{},ms:{}};}catch{return{p:[],logs:{},ms:{}};}})();
-const sv=()=>localStorage.setItem(KEY,JSON.stringify(db));
+function sv(){
+  localStorage.setItem(KEY,JSON.stringify(db));
+  syncToSupabase();
+}
 const uid=()=>"id"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const td=()=>new Date().toISOString().slice(0,10);
 const dd=(a,b)=>Math.floor((new Date(b)-new Date(a))/86400000);
