@@ -147,7 +147,7 @@
 
 <button class="totop" id="totop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
-<div class="mspop" id="mspop" style="display:none">
+<div class="ms-popup mspop" id="mspop" style="display:none">
   <div class="msemoji" id="msemoji"></div>
   <div class="mstitle" id="mstitle"></div>
   <div class="msdesc" id="msdesc"></div>
@@ -283,11 +283,18 @@ const MS=[
 ];
 let db=(()=>{try{return JSON.parse(localStorage.getItem(KEY))||{p:[],logs:{},ms:{}};}catch{return{p:[],logs:{},ms:{}};}})();
 function sv(){
+  db.updatedAt=new Date().toISOString();
   localStorage.setItem(KEY,JSON.stringify(db));
   syncToSupabase();
 }
 const uid=()=>"id"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-const td=()=>new Date().toISOString().slice(0,10);
+const td=()=>{
+  const d=new Date();
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,"0");
+  const day=String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+};
 const dd=(a,b)=>Math.floor((new Date(b)-new Date(a))/86400000);
 const fd=d=>{const x=new Date(d);return`${x.getFullYear()}.${x.getMonth()+1}.${x.getDate()}`;};
 // 요일 선택이 있으면 요일 기준, 없으면 freq 기준
@@ -336,7 +343,11 @@ function gItems(proj,date){
 function streak(proj){
   let s=0;const d=new Date();
   for(let i=0;i<1000;i++){
-    const k=d.toISOString().slice(0,10);
+    const k=[
+      d.getFullYear(),
+      String(d.getMonth()+1).padStart(2,"0"),
+      String(d.getDate()).padStart(2,"0")
+    ].join("-");
     const items=gItems(proj,k);
     if(!items.length){d.setDate(d.getDate()-1);continue;}
     if(!items.every(id=>(db.logs[k]||{})[id]))break;
@@ -874,32 +885,45 @@ async function syncToSupabase(){
     await fetch(`${SUPA_URL}/rest/v1/cheon_data?id=eq.main`,{
       method:"PATCH",
       headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":`Bearer ${SUPA_KEY}`,"Prefer":"return=minimal"},
-      body:JSON.stringify({data:db, updated_at:new Date().toISOString()})
+      body:JSON.stringify({data:db, updated_at:db.updatedAt||new Date().toISOString()})
     });
   }catch(e){console.log("sync error",e);}
 }
 
 async function loadFromSupabase(){
   try{
-    const res=await fetch(`${SUPA_URL}/rest/v1/cheon_data?id=eq.main&select=data`,{
+    const localDb=(()=>{try{return JSON.parse(localStorage.getItem(KEY));}catch{return null;}})();
+    const res=await fetch(`${SUPA_URL}/rest/v1/cheon_data?id=eq.main&select=data,updated_at`,{
       headers:{"apikey":SUPA_KEY,"Authorization":`Bearer ${SUPA_KEY}`}
     });
+    if(!res.ok)throw new Error(`Supabase load failed: ${res.status}`);
     const rows=await res.json();
-    if(rows&&rows[0]&&rows[0].data&&rows[0].data.p){
-      db=rows[0].data;
+    const serverRow=rows&&rows[0];
+    const serverDb=serverRow?.data;
+
+    if(!serverDb||!serverDb.p)return false;
+
+    const localHasData=!!(localDb&&Array.isArray(localDb.p)&&(localDb.p.length||Object.keys(localDb.logs||{}).length));
+    const localTime=localDb?.updatedAt?Date.parse(localDb.updatedAt):0;
+    const serverTime=Date.parse(serverRow.updated_at||serverDb.updatedAt||0)||0;
+
+    // 기존 버전처럼 로컬에 수정 시간이 없더라도 데이터가 있으면 먼저 보존한다.
+    if(localHasData&&(!localTime||localTime>serverTime)){
+      db=localDb;
+      if(!db.updatedAt)db.updatedAt=new Date().toISOString();
       localStorage.setItem(KEY,JSON.stringify(db));
+      await syncToSupabase();
       return true;
     }
+
+    db=serverDb;
+    db.updatedAt=serverRow.updated_at||serverDb.updatedAt||new Date().toISOString();
+    localStorage.setItem(KEY,JSON.stringify(db));
+    return true;
   }catch(e){console.log("load error",e);}
   return false;
 }
 
-// save 함수에 Supabase 동기화 추가
-const _sv=sv;
-function sv(){
-  _sv();
-  syncToSupabase();
-}
 
 // 초기 렌더
 initDayPickers();
