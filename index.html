@@ -87,6 +87,54 @@
     .sthn{font-size:13px;}
     .strate{font-size:13px;font-weight:700;}
     .sthd{font-size:11px;color:var(--text3);margin-bottom:5px;}
+    .dashgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+    .dashitem{background:var(--bg3);border-radius:10px;padding:12px;}
+    .dashlbl{font-size:11px;color:var(--text2);margin-bottom:4px;}
+    .dashval{font-size:19px;font-weight:900;}
+    .statusline{font-size:12px;color:var(--text2);margin-top:5px;line-height:1.5;}
+    .statuswarn{color:#fbbf24;}
+    .statusok{color:#4ade80;}
+    .statusfail{color:#f87171;}
+    .miniheat{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-top:8px;}
+    .heatday{width:22px;height:22px;border-radius:5px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--text3);}
+    .heatday.ok{background:#18351f;border-color:#285b35;color:#6ee7a0;}
+    .heatday.fail{background:#351b1b;border-color:#5f2b2b;color:#fca5a5;}
+    .heatday.off{opacity:.35;}
+    .rankrow{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
+    .rankrow:last-child{border-bottom:none;}
+    .ranknum{width:22px;color:var(--text2);font-size:12px;}
+    .rankname{flex:1;font-size:13px;}
+    .rankval{font-size:13px;font-weight:700;}
+    .catstat{padding:10px 0;border-top:1px solid var(--border);}
+    .catstat:first-of-type{border-top:none;}
+    .catstathead{display:flex;align-items:center;gap:7px;}
+    .catstatname{font-size:13px;font-weight:700;flex:1;}
+    .catstatnums{font-size:11px;color:var(--text2);}
+    .reportbox{border-radius:10px;padding:11px 12px;margin:10px 0;font-size:12px;line-height:1.55;}
+    .reportok{background:#142c1b;border:1px solid #245333;color:#86efac;}
+    .reportfail{background:#321919;border:1px solid #653030;color:#fca5a5;}
+    .reporttitle{font-weight:800;margin-bottom:5px;}
+    .reportmissing{color:#fecaca;}
+    .reportsub{margin-top:6px;color:var(--text2);}
+    .failrank{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
+    .failrank:last-child{border-bottom:none;}
+    .failname{flex:1;font-size:13px;}
+    .failcount{font-size:12px;font-weight:800;color:#fca5a5;}
+    .stat-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px;position:sticky;top:0;z-index:20;background:var(--bg);padding:4px 0 8px;}
+    .stat-tab{border:1px solid var(--border);background:var(--bg2);color:var(--text3);border-radius:10px;padding:10px 4px;font-size:12px;font-weight:800;}
+    .stat-tab.active{background:var(--text);color:var(--bg);border-color:var(--text);}
+    .stat-panel{display:none;}
+    .stat-panel.active{display:block;}
+    .project-list-btn{width:100%;display:flex;align-items:center;gap:9px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px;color:var(--text);text-align:left;}
+    .project-list-btn .project-list-name{font-size:14px;font-weight:800;flex:1;}
+    .project-list-btn .project-list-stat{font-size:11px;color:var(--text2);}
+    .project-list-btn .project-arrow{font-size:18px;color:var(--text3);transition:transform .18s ease;}
+    .project-list-btn.open .project-arrow{transform:rotate(90deg);}
+    .project-detail{display:none;margin-top:-2px;margin-bottom:10px;}
+    .project-detail.open{display:block;}
+
+
+
 
     /* 설정 */
     .seth{padding:48px 24px 20px;}
@@ -128,7 +176,21 @@
     .msemoji{font-size:48px;margin-bottom:12px;}
     .mstitle{font-size:20px;font-weight:900;margin-bottom:6px;}
     .msdesc{font-size:14px;color:var(--text2);line-height:1.6;white-space:pre-line;}
-  </style>
+  
+    .state-actions{display:flex;gap:6px;align-items:center}
+    .failbtn{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--border);background:transparent;color:var(--text3);font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center}
+    .failbtn.active{background:#7f1d1d;border-color:#ef4444;color:#fff}
+    .reason-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    .reason-chip{border:1px solid var(--border);background:var(--bg3);color:var(--text2);border-radius:10px;padding:10px 8px;font-size:13px;font-weight:700}
+    .reason-chip.sel{border-color:#ef4444;background:rgba(239,68,68,.14);color:#fca5a5}
+    .failure-note{margin-top:8px;padding:10px 12px;border-radius:10px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.22);font-size:12px;line-height:1.55;color:var(--text2)}
+    .failure-note b{color:#fca5a5}
+    .day-history{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+    .history-item{padding:11px 12px;border-radius:11px;background:var(--bg3);border:1px solid var(--border)}
+    .history-head{display:flex;justify-content:space-between;gap:10px;font-size:13px;font-weight:800}
+    .history-reason{margin-top:5px;font-size:12px;color:var(--text2);line-height:1.5}
+
+</style>
 </head>
 <body>
 <div id="app">
@@ -272,6 +334,33 @@
   </div>
 </div>
 
+
+<!-- 실패 이유 기록 모달 -->
+<div class="moverlay" id="mfail">
+  <div class="modal">
+    <div class="mtitle" id="mfailt">실패 이유</div>
+    <div class="mfield">
+      <div class="mlbl">왜 하지 못했나요? (여러 개 선택 가능)</div>
+      <div class="reason-grid" id="mfailreasons">
+        <button class="reason-chip" data-v="피곤함">🥱 피곤함</button>
+        <button class="reason-chip" data-v="깜빡함">🤦 깜빡함</button>
+        <button class="reason-chip" data-v="시간 부족">⏰ 시간 부족</button>
+        <button class="reason-chip" data-v="몸이 아픔">🤒 몸이 아픔</button>
+        <button class="reason-chip" data-v="의욕 없음">🫥 의욕 없음</button>
+        <button class="reason-chip" data-v="비/날씨">🌧️ 비/날씨</button>
+        <button class="reason-chip" data-v="일정">📅 일정</button>
+        <button class="reason-chip" data-v="기타">✏️ 기타</button>
+      </div>
+    </div>
+    <div class="mfield"><div class="mlbl">메모 (선택)</div><textarea id="mfailmemo" rows="4" placeholder="예: 배달이 늦게 끝나서 바로 잠들었다." style="width:100%;resize:vertical"></textarea></div>
+    <div class="mbtns">
+      <button class="btn-ghost" style="flex:1" onclick="clearFailureRecord()">미기록으로</button>
+      <button class="btn-primary" style="flex:2" onclick="saveFailureRecord()">실패로 저장</button>
+    </div>
+    <button class="btn-ghost" style="width:100%;margin-top:8px" onclick="cm('mfail')">취소</button>
+  </div>
+</div>
+
 <script>
 const KEY="cheon_v6";
 const MS=[
@@ -282,6 +371,7 @@ const MS=[
   {d:1000,e:"🧄",t:"사람이 되셨습니다.",s:"천일의 쑥과마늘을 다 드셨습니다.\n당신은 완전히 새로운 사람이에요."},
 ];
 let db=(()=>{try{return JSON.parse(localStorage.getItem(KEY))||{p:[],logs:{},ms:{}};}catch{return{p:[],logs:{},ms:{}};}})();
+if(!db.failures)db.failures={};
 function sv(){
   db.updatedAt=new Date().toISOString();
   localStorage.setItem(KEY,JSON.stringify(db));
@@ -333,27 +423,254 @@ let curP=null, curC=null, curSC=null, exp={};
 // 체크 가능 아이템
 function gItems(proj,date){
   const ids=[];
+
+  // 카테고리가 없는 단독 프로젝트
+  if(!proj.cats || proj.cats.length===0){
+    if(sd(proj.days,proj.freq||1,proj.start,date)) ids.push(proj.id);
+    return ids;
+  }
+
+  // 카테고리가 있는 프로젝트
   for(const c of proj.cats){
-    if(!c.subs.length){if(sd(c.days,c.freq,c.start,date))ids.push(c.id);}
-    else for(const s of c.subs){if(sd(s.days,s.freq,s.start,date))ids.push(s.id);}
+    if(!c.subs || c.subs.length===0){
+      if(sd(c.days,c.freq||1,c.start,date)) ids.push(c.id);
+    } else {
+      for(const s of c.subs){
+        if(sd(s.days,s.freq||1,s.start,date)) ids.push(s.id);
+      }
+    }
   }
   return ids;
 }
 
-function streak(proj){
-  let s=0;const d=new Date();
-  for(let i=0;i<1000;i++){
-    const k=[
-      d.getFullYear(),
-      String(d.getMonth()+1).padStart(2,"0"),
-      String(d.getDate()).padStart(2,"0")
-    ].join("-");
-    const items=gItems(proj,k);
-    if(!items.length){d.setDate(d.getDate()-1);continue;}
-    if(!items.every(id=>(db.logs[k]||{})[id]))break;
-    s++;d.setDate(d.getDate()-1);
+function localKey(d){
+  return [
+    d.getFullYear(),
+    String(d.getMonth()+1).padStart(2,"0"),
+    String(d.getDate()).padStart(2,"0")
+  ].join("-");
+}
+
+function addDays(date,n){
+  const d=new Date(date+"T00:00:00");
+  d.setDate(d.getDate()+n);
+  return localKey(d);
+}
+
+function itemNameMap(proj){
+  const map={[proj.id]:proj.name};
+  for(const c of (proj.cats||[])){
+    map[c.id]=c.name;
+    for(const s of (c.subs||[])) map[s.id]=s.name;
+  }
+  return map;
+}
+
+function targetItems(target,date){
+  if(target.kind==="project") return gItems(target.proj,date);
+  if(target.kind==="category"){
+    const c=target.cat;
+    if(!c.subs || c.subs.length===0){
+      return sd(c.days,c.freq||1,c.start,date)?[c.id]:[];
+    }
+    return c.subs.filter(s=>sd(s.days,s.freq||1,s.start,date)).map(s=>s.id);
+  }
+  return [];
+}
+
+function targetStart(target){
+  if(target.kind==="category") return target.cat.start;
+  return target.proj.start;
+}
+
+function dayStatus(target,date){
+  const ids=targetItems(target,date);
+  const log=db.logs[date]||{};
+  const names=itemNameMap(target.proj);
+  const missing=ids.filter(id=>!log[id]).map(id=>names[id]||"이름 없음");
+  const done=ids.length-missing.length;
+  return {
+    scheduled:ids.length,
+    done,
+    missing,
+    complete:ids.length>0&&missing.length===0
+  };
+}
+
+// 현재 연속: 오늘이 아직 미완료면 오늘은 보류하고 어제까지의 연속을 유지
+function currentStreak(target){
+  let s=0;
+  let d=new Date();
+  let firstScheduled=true;
+
+  for(let i=0;i<1500;i++){
+    const k=localKey(d);
+    const st=dayStatus(target,k);
+
+    if(!st.scheduled){
+      d.setDate(d.getDate()-1);
+      continue;
+    }
+
+    if(firstScheduled && k===td() && !st.complete){
+      firstScheduled=false;
+      d.setDate(d.getDate()-1);
+      continue;
+    }
+
+    firstScheduled=false;
+    if(!st.complete) break;
+    s++;
+    d.setDate(d.getDate()-1);
   }
   return s;
+}
+
+function bestStreak(target){
+  const start=targetStart(target);
+  const end=td();
+  let cur=0,best=0;
+  for(let k=start;k<=end;k=addDays(k,1)){
+    const st=dayStatus(target,k);
+    if(!st.scheduled) continue;
+    if(st.complete){
+      cur++;
+      if(cur>best)best=cur;
+    }else{
+      cur=0;
+    }
+  }
+  return best;
+}
+
+function targetStats(target,fromDate=null,toDate=null){
+  const start=fromDate&&fromDate>targetStart(target)?fromDate:targetStart(target);
+  const end=toDate||td();
+  let scheduledDays=0,successDays=0,scheduledItems=0,doneItems=0;
+
+  if(start>end) return {scheduledDays:0,successDays:0,scheduledItems:0,doneItems:0,rate:0};
+
+  for(let k=start;k<=end;k=addDays(k,1)){
+    const st=dayStatus(target,k);
+    if(!st.scheduled) continue;
+    scheduledDays++;
+    scheduledItems+=st.scheduled;
+    doneItems+=st.done;
+    if(st.complete)successDays++;
+  }
+
+  return {
+    scheduledDays,
+    successDays,
+    scheduledItems,
+    doneItems,
+    rate:scheduledDays?Math.round(successDays/scheduledDays*100):0
+  };
+}
+
+function streak(proj){
+  return currentStreak({kind:"project",proj});
+}
+
+function statusMessage(target,date=td()){
+  const st=dayStatus(target,date);
+  const isToday=date===td();
+  const isPast=date<td();
+
+  if(!st.scheduled){
+    return {cls:"",text:isToday?"오늘은 예정된 습관이 없습니다.":"예정된 습관이 없던 날입니다."};
+  }
+
+  if(st.complete){
+    return {
+      cls:"statusok",
+      text:isToday
+        ?`🎉 오늘 ${st.done}/${st.scheduled} 완료 · 성공`
+        :`✅ ${st.done}/${st.scheduled} 완료 · 성공`
+    };
+  }
+
+  if(isPast){
+    return {
+      cls:"statusfail",
+      text:`❌ 실패 원인: ${st.missing.join(", ")}`
+    };
+  }
+
+  if(st.missing.length===1){
+    return {cls:"statuswarn",text:`⚠️ ${st.missing[0]}만 완료하면 오늘 성공`};
+  }
+
+  return {cls:"statuswarn",text:`${st.done}/${st.scheduled} 완료 · 남은 습관: ${st.missing.join(", ")}`};
+}
+
+function streakBeforeDate(target,date){
+  let s=0;
+  let d=new Date(date+"T00:00:00");
+  d.setDate(d.getDate()-1);
+
+  for(let i=0;i<1500;i++){
+    const k=localKey(d);
+    const st=dayStatus(target,k);
+
+    if(!st.scheduled){
+      d.setDate(d.getDate()-1);
+      continue;
+    }
+
+    if(!st.complete) break;
+    s++;
+    d.setDate(d.getDate()-1);
+  }
+  return s;
+}
+
+function failureCounts(target,fromDate,toDate){
+  const counts={};
+  const start=fromDate>targetStart(target)?fromDate:targetStart(target);
+  const end=toDate||td();
+
+  if(start>end) return counts;
+
+  for(let k=start;k<=end;k=addDays(k,1)){
+    const st=dayStatus(target,k);
+    if(!st.scheduled || st.complete) continue;
+    for(const name of st.missing){
+      counts[name]=(counts[name]||0)+1;
+    }
+  }
+
+  return counts;
+}
+
+function mergeCounts(base,extra){
+  for(const [name,count] of Object.entries(extra)){
+    base[name]=(base[name]||0)+count;
+  }
+  return base;
+}
+
+function yesterdayReport(target){
+  const d=new Date();
+  d.setDate(d.getDate()-1);
+  const y=localKey(d);
+  const st=dayStatus(target,y);
+
+  if(!st.scheduled) return "";
+
+  if(st.complete){
+    return `<div class="reportbox reportok">
+      <div class="reporttitle">어제 결과</div>
+      <div>🎉 ${st.done}/${st.scheduled} 완료 · 성공</div>
+    </div>`;
+  }
+
+  const ended=streakBeforeDate(target,y);
+  return `<div class="reportbox reportfail">
+    <div class="reporttitle">어제 실패 원인</div>
+    <div class="reportmissing">${st.missing.map(x=>`❌ ${x}`).join("<br>")}</div>
+    ${ended>0?`<div class="reportsub">연속 ${ended}일이 종료되었습니다.</div>`:""}
+  </div>`;
 }
 
 // 모달 열기/닫기
@@ -432,6 +749,7 @@ function renderHome(){
             <div class="cbar" style="background:${proj.color};cursor:pointer" onclick="toggleExp('p_${proj.id}');renderHome()"></div>
             <div class="rinfo" onclick="openDetail('${proj.id}')" style="cursor:pointer">
               <div class="rname">${proj.name}<span class="badge ${isBad?"bb":"bg"}">${isBad?"끊기":"실천"}</span></div>
+              ${(()=>{const sm=statusMessage({kind:"project",proj},t);return `<div class="statusline ${sm.cls}">${sm.text}</div>`;})()}
             </div>
             <button class="ebtn" onclick="event.stopPropagation();openCatModal('${proj.id}')">＋</button>
             <button class="ebtn" onclick="event.stopPropagation();openProjModal('${proj.id}')">수정</button>
@@ -459,9 +777,13 @@ function renderHome(){
             } else {
               const catDone=cat.subs.filter(s=>sd(s.days,s.freq||1,s.start,t)&&log[s.id]).length;
               const catTotal=cat.subs.filter(s=>sd(s.days,s.freq||1,s.start,t)).length;
+              const csm=statusMessage({kind:"category",proj,cat},t);
               html+=`<div class="subrow" onclick="openDetail('${proj.id}')" style="cursor:pointer">
                 <div class="cbar" style="background:${cat.color}"></div>
-                <div class="sinfo"><div class="sname">${cat.name}</div></div>
+                <div class="sinfo">
+                  <div class="sname">${cat.name}</div>
+                  <div class="statusline ${csm.cls}">${csm.text}</div>
+                </div>
                 <button class="ebtn" onclick="event.stopPropagation();openCatModal('${proj.id}','${cat.id}')">수정</button>
                 <span style="color:var(--text3);font-size:14px;padding:0 4px">›</span>
               </div>`;
@@ -478,9 +800,56 @@ function renderHome(){
 }
 
 function toggleExp(key){exp[key]=!exp[key];}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
+function getFailure(date,id){return db.failures?.[date]?.[id]||null;}
+function removeFailure(date,id){
+  if(db.failures?.[date]){
+    delete db.failures[date][id];
+    if(!Object.keys(db.failures[date]).length)delete db.failures[date];
+  }
+}
 function toggleLog(id,date){
   const t=date||td();if(!db.logs[t])db.logs[t]={};
-  db.logs[t][id]=!db.logs[t][id];sv();
+  const next=!db.logs[t][id];
+  db.logs[t][id]=next;
+  if(next)removeFailure(t,id);
+  sv();
+}
+let failCtx={date:null,id:null,name:""};
+function openFailModal(id,name,date){
+  const t=date||td();failCtx={date:t,id,name};
+  const rec=getFailure(t,id);
+  document.getElementById("mfailt").textContent=`${name} · 실패 이유`;
+  document.querySelectorAll("#mfailreasons .reason-chip").forEach(b=>b.classList.toggle("sel",!!rec?.reasons?.includes(b.dataset.v)));
+  document.getElementById("mfailmemo").value=rec?.memo||"";
+  om("mfail");
+}
+document.querySelectorAll("#mfailreasons .reason-chip").forEach(b=>b.onclick=()=>b.classList.toggle("sel"));
+function saveFailureRecord(){
+  const {date,id}=failCtx;if(!date||!id)return;
+  const reasons=Array.from(document.querySelectorAll("#mfailreasons .reason-chip.sel")).map(b=>b.dataset.v);
+  const memo=document.getElementById("mfailmemo").value.trim();
+  if(!db.failures[date])db.failures[date]={};
+  db.failures[date][id]={reasons,memo,updatedAt:new Date().toISOString()};
+  if(!db.logs[date])db.logs[date]={};
+  db.logs[date][id]=false;
+  sv();cm("mfail");renderDetail();
+}
+function clearFailureRecord(){
+  const {date,id}=failCtx;if(!date||!id)return;
+  removeFailure(date,id);
+  if(db.logs[date])delete db.logs[date][id];
+  sv();cm("mfail");renderDetail();
+}
+function failureRecordHtml(proj,date){
+  const ids=gItems(proj,date), names=itemNameMap(proj), log=db.logs[date]||{};
+  const rows=ids.filter(id=>!log[id]).map(id=>{
+    const rec=getFailure(date,id);
+    const reason=rec?.reasons?.length?rec.reasons.join(", "):"이유 미입력";
+    const memo=rec?.memo?`<div class="history-reason">메모: ${esc(rec.memo)}</div>`:"";
+    return `<div class="history-item"><div class="history-head"><span>${esc(names[id]||"이름 없음")}</span><span>${rec?"❌ 실패":"○ 미기록"}</span></div><div class="history-reason">이유: ${esc(reason)}</div>${memo}</div>`;
+  });
+  return rows.length?`<div class="day-history">${rows.join("")}</div>`:"";
 }
 
 let selDate=null; // 선택된 날짜 (null이면 오늘)
@@ -503,7 +872,10 @@ function renderDetail(){
   const items=gItems(proj,t);
   const done=items.filter(id=>log[id]).length;
   const pct=items.length?Math.round(done/items.length*100):0;
-  const st=streak(proj);
+  const target={kind:"project",proj};
+  const st=currentStreak(target);
+  const bst=bestStreak(target);
+  const sm=statusMessage(target,t);
   const day=dd(proj.start,t)+1;
   const pid=proj.id;
 
@@ -524,14 +896,39 @@ function renderDetail(){
     <div class="sumbox">
       <div class="sumrow"><span class="sumlbl">${isToday?"오늘":"선택일"} 진행률</span><span class="sumval">${pct}%</span></div>
       <div class="barbg" style="margin-bottom:10px"><div class="barfill" style="background:${proj.color};width:${pct}%"></div></div>
-      <div class="sumrow"><span class="sumlbl">연속 달성</span><span class="sumval">${st}일 🔥</span></div>
-      <div class="sumrow"><span class="sumlbl">오늘 완료</span><span class="sumval">${done} / ${items.length}</span></div>
+      <div class="sumrow"><span class="sumlbl">현재 연속</span><span class="sumval">${st}일 🔥</span></div>
+      <div class="sumrow"><span class="sumlbl">최고 연속</span><span class="sumval">${bst}일 🏆</span></div>
+      <div class="sumrow"><span class="sumlbl">${isToday?"오늘 완료":"선택일 완료"}</span><span class="sumval">${done} / ${items.length}</span></div>
+      <div class="statusline ${sm.cls}" style="margin-top:8px">${sm.text}</div>
+      ${!isToday&&dayStatus(target,t).scheduled&&!dayStatus(target,t).complete
+        ?`<div class="reportbox reportfail" style="margin-bottom:0">
+            <div class="reporttitle">이날 왜 하지 못했는지</div>
+            ${failureRecordHtml(proj,t)}
+          </div>`
+        :""}
     </div>
     <div class="tsec">
       <div class="slbl">오늘의 습관</div>`;
 
   if(!proj.cats.length){
-    html+=`<div class="empty" style="padding:32px 0">카테고리를 추가해보세요!</div>`;
+    // 단독 프로젝트는 상세 화면에서도 직접 체크 가능
+    const does=sd(proj.days,proj.freq||1,proj.start,t);
+    const ck=!!log[proj.id];
+    const isBad=proj.type==="bad";
+    const chkStyle=ck&&!isBad?`background:${proj.color};border-color:${proj.color}`:"";
+    html+=`<div class="card" style="${!does?"opacity:.4":""}">
+      <div class="row">
+        <div class="cbar" style="background:${proj.color}"></div>
+        <div class="rinfo">
+          <div class="rname">${proj.name}<span class="badge ${isBad?"bb":"bg"}">${isBad?"끊기":"실천"}</span></div>
+        </div>
+        <div class="state-actions">
+          <button class="failbtn ${getFailure(t,proj.id)?"active":""}" data-act="failproj" data-name="${esc(proj.name)}" data-can="${does?1:0}">✕</button>
+          <button class="chk ${ck?(isBad?"done-bad":"done"):""}" style="${chkStyle}"
+            data-act="checkproj" data-can="${does?1:0}">${ck?"✓":""}</button>
+        </div>
+      </div>
+    </div>`;
   } else {
     for(const cat of proj.cats){
       const isBad=cat.type==="bad";
@@ -548,7 +945,10 @@ function renderDetail(){
               <div class="rname">${cat.name}<span class="badge ${isBad?"bb":"bg"}">${isBad?"끊기":"실천"}</span></div>
             </div>
             <button class="ebtn" data-act="editcat" data-cid="${cat.id}">수정</button>
-            <button class="chk ${ck?(isBad?"done-bad":"done"):""}" style="${chkStyle}" data-act="checkcat" data-cid="${cat.id}" data-can="${catDoes?1:0}">${ck?"✓":""}</button>
+            <div class="state-actions">
+              <button class="failbtn ${getFailure(t,cat.id)?"active":""}" data-act="failcat" data-cid="${cat.id}" data-name="${esc(cat.name)}" data-can="${catDoes?1:0}">✕</button>
+              <button class="chk ${ck?(isBad?"done-bad":"done"):""}" style="${chkStyle}" data-act="checkcat" data-cid="${cat.id}" data-can="${catDoes?1:0}">${ck?"✓":""}</button>
+            </div>
           </div>
         </div>`;
       } else {
@@ -560,6 +960,7 @@ function renderDetail(){
             <div class="cbar" style="background:${cat.color};cursor:pointer" data-act="togglecat" data-cid="${cat.id}"></div>
             <div class="rinfo" style="cursor:pointer" data-act="togglecat" data-cid="${cat.id}">
               <div class="rname" style="pointer-events:none">${cat.name}</div>
+              ${(()=>{const csm=statusMessage({kind:"category",proj,cat},t);return `<div class="statusline ${csm.cls}" style="pointer-events:none">${csm.text}</div>`;})()}
             </div>
             <button class="ebtn" data-act="editcat" data-cid="${cat.id}">수정</button>
             <button class="togbtn ${isExp?"open":""}" data-act="togglecat" data-cid="${cat.id}">▼</button>
@@ -572,8 +973,11 @@ function renderDetail(){
             const ck=!!log[sub.id];
             const chkStyle=ck&&!isBad?`background:${cat.color};border-color:${cat.color}`:"";
             html+=`<div class="subrow" style="${does?"":"opacity:.4"}">
-              <button class="chk ${ck?(isBad?"done-bad":"done"):""}" style="${chkStyle}" data-act="checksub" data-cid="${cat.id}" data-sid="${sub.id}" data-can="${does?1:0}">${ck?"✓":""}</button>
-              <div class="sinfo"><div class="sname ${ck&&!isBad?"done":""}">${sub.name}</div></div>
+              <div class="state-actions">
+                <button class="failbtn ${getFailure(t,sub.id)?"active":""}" data-act="failsub" data-cid="${cat.id}" data-sid="${sub.id}" data-name="${esc(sub.name)}" data-can="${does?1:0}">✕</button>
+                <button class="chk ${ck?(isBad?"done-bad":"done"):""}" style="${chkStyle}" data-act="checksub" data-cid="${cat.id}" data-sid="${sub.id}" data-can="${does?1:0}">${ck?"✓":""}</button>
+              </div>
+              <div class="sinfo"><div class="sname ${ck&&!isBad?"done":""}">${sub.name}</div>${getFailure(t,sub.id)?`<div class="failure-note"><b>실패:</b> ${esc((getFailure(t,sub.id).reasons||[]).join(", ")||"이유 미입력")}${getFailure(t,sub.id).memo?`<br>${esc(getFailure(t,sub.id).memo)}`:""}</div>`:""}</div>
               <button class="ebtn" data-act="editsub" data-cid="${cat.id}" data-sid="${sub.id}">수정</button>
             </div>`;
           }
@@ -597,10 +1001,14 @@ function renderDetail(){
     if(act==="addcat") openCatModal(curP);
     else if(act==="editcat") openCatModal(curP,cid);
     else if(act==="togglecat"){toggleExp("c_"+cid);renderDetail();}
+    else if(act==="checkproj"){if(btn.dataset.can==="1"){toggleLog(curP,selDate);renderDetail();}}
+    else if(act==="failproj"){if(btn.dataset.can==="1")openFailModal(curP,btn.dataset.name,selDate);}
     else if(act==="checkcat"){if(btn.dataset.can==="1"){toggleLog(cid,selDate);renderDetail();}}
+    else if(act==="failcat"){if(btn.dataset.can==="1")openFailModal(cid,btn.dataset.name,selDate);}
     else if(act==="addsub") openSubModal(cid);
     else if(act==="editsub") openSubModal(cid,sid);
     else if(act==="checksub"){if(btn.dataset.can==="1"){toggleLog(sid,selDate);renderDetail();}}
+    else if(act==="failsub"){if(btn.dataset.can==="1")openFailModal(sid,btn.dataset.name,selDate);}
     else if(act==="back") showV("vh");
   };
 }
@@ -750,89 +1158,215 @@ document.getElementById("msubok").onclick=()=>{
 };
 
 // ── 통계 ──
-function renderStats(){
-  const t=td();
-  const el=document.getElementById("sc");
-  if(!db.p.length){el.innerHTML=`<div class="empty">아직 프로젝트가 없어요.</div>`;return;}
-  el.innerHTML=db.p.map(proj=>{
-    const projDay=dd(proj.start,t)+1;
-    let rows="";
+let currentStatsTab="summary";
 
-    // 단독 프로젝트
-    if(!proj.cats.length){
-      // 단독 프로젝트 - 프로젝트 자체에 마일스톤
-      const achieved=MS.filter(m=>projDay>=m.d);
-      const next=MS.find(m=>projDay<m.d);
-      const msBadges=achieved.map(m=>`<span style="font-size:16px">${m.e}</span>`).join("");
-      rows+=`<tr><td colspan="3" style="padding:4px 0">
-        ${msBadges?`<div style="display:flex;gap:4px;margin-bottom:6px">${msBadges}</div>`:""}
-        ${next?`<div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:4px">
-            <span>목표 ${next.e} D+${next.d}</span><span>${projDay}/${next.d}일</span>
-          </div>
-          <div class="barbg"><div class="barfill" style="background:${proj.color};width:${Math.min(projDay/next.d*100,100)}%"></div></div>
-        </div>`:""}
-      </td></tr>`;
-    }
-    for(const cat of proj.cats){
-      if(!cat.subs.length){
-        const catDay=dd(cat.start,t)+1;
-        const achieved=MS.filter(m=>catDay>=m.d);
-        const next=MS.find(m=>catDay<m.d);
-        const msBadges=achieved.map(m=>`<span style="font-size:14px">${m.e}</span>`).join("");
-        rows+=`<tr>
-          <td style="padding:8px 4px 4px;font-size:14px">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:3px;height:14px;border-radius:2px;background:${cat.color};flex-shrink:0"></div>
-              ${cat.name}
-              ${msBadges?`<span style="display:flex;gap:2px">${msBadges}</span>`:""}
-            </div>
-          </td>
-          <td style="padding:8px 4px 4px;font-size:13px;color:var(--text2);text-align:right;white-space:nowrap">${fd(cat.start)}</td>
-          <td style="padding:8px 4px 4px;font-size:13px;color:var(--text2);text-align:right;white-space:nowrap">D+${catDay}</td>
-        </tr>
-        ${next?`<tr><td colspan="3" style="padding:0 4px 10px">
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:3px">
-            <span>목표 ${next.e} D+${next.d}</span><span>${catDay}/${next.d}일</span>
-          </div>
-          <div class="barbg"><div class="barfill" style="background:${cat.color};width:${Math.min(catDay/next.d*100,100)}%"></div></div>
-        </td></tr>`:""}`;
-      } else {
-        for(const sub of cat.subs){
-          const subDay=dd(sub.start,t)+1;
-          const achieved=MS.filter(m=>subDay>=m.d);
-          const next=MS.find(m=>subDay<m.d);
-          const msBadges=achieved.map(m=>`<span style="font-size:14px">${m.e}</span>`).join("");
-          rows+=`<tr>
-            <td style="padding:8px 4px 4px;font-size:14px">
-              <div style="display:flex;align-items:center;gap:8px">
-                <div style="width:3px;height:14px;border-radius:2px;background:${cat.color};flex-shrink:0"></div>
-                ${cat.name} · ${sub.name}
-                ${msBadges?`<span style="display:flex;gap:2px">${msBadges}</span>`:""}
-              </div>
-            </td>
-            <td style="padding:8px 4px 4px;font-size:13px;color:var(--text2);text-align:right;white-space:nowrap">${fd(sub.start)}</td>
-            <td style="padding:8px 4px 4px;font-size:13px;color:var(--text2);text-align:right;white-space:nowrap">D+${subDay}</td>
-          </tr>
-          ${next?`<tr><td colspan="3" style="padding:0 4px 10px">
-            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:3px">
-              <span>목표 ${next.e} D+${next.d}</span><span>${subDay}/${next.d}일</span>
-            </div>
-            <div class="barbg"><div class="barfill" style="background:${cat.color};width:${Math.min(subDay/next.d*100,100)}%"></div></div>
-          </td></tr>`:""}`;
-        }
-      }
-    }
-    // 마일스톤은 카테고리별로 표시
-    return`<div class="stcard">
-      <div class="stch" style="margin-bottom:8px">
-        <div class="cbar" style="background:${proj.color};height:18px"></div>
-        <div class="stpn">${proj.name}</div>
-        <div class="std">D+${projDay}</div>
+function showStatsTab(tab){
+  currentStatsTab=tab;
+  document.querySelectorAll(".stat-tab").forEach(btn=>{
+    btn.classList.toggle("active",btn.dataset.tab===tab);
+  });
+  document.querySelectorAll(".stat-panel").forEach(panel=>{
+    panel.classList.toggle("active",panel.id==="stat-"+tab);
+  });
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function toggleProjectDetail(id,btn){
+  const detail=document.getElementById(id);
+  if(!detail)return;
+  const open=!detail.classList.contains("open");
+  detail.classList.toggle("open",open);
+  if(btn)btn.classList.toggle("open",open);
+}
+
+function renderStats(){
+  const el=document.getElementById("sc");
+  if(!db.p.length){
+    el.innerHTML=`<div class="empty">아직 프로젝트가 없어요.</div>`;
+    return;
+  }
+
+  const today=td();
+  const d7=new Date();
+  d7.setDate(d7.getDate()-6);
+  const weekStart=localKey(d7);
+
+  const dm=new Date();
+  const monthStart=[dm.getFullYear(),String(dm.getMonth()+1).padStart(2,"0"),"01"].join("-");
+
+  const projectRows=db.p.map(proj=>{
+    const target={kind:"project",proj};
+    const all=targetStats(target);
+    const week=targetStats(target,weekStart,today);
+    const month=targetStats(target,monthStart,today);
+    const cur=currentStreak(target);
+    const best=bestStreak(target);
+    return {proj,target,all,week,month,cur,best};
+  });
+
+  const totalScheduled=projectRows.reduce((a,x)=>a+x.all.scheduledDays,0);
+  const totalSuccess=projectRows.reduce((a,x)=>a+x.all.successDays,0);
+  const totalDone=projectRows.reduce((a,x)=>a+x.all.doneItems,0);
+  const overallRate=totalScheduled?Math.round(totalSuccess/totalScheduled*100):0;
+  const maxCurrent=Math.max(0,...projectRows.map(x=>x.cur));
+  const maxBest=Math.max(0,...projectRows.map(x=>x.best));
+
+  const monthlyFailureCounts={};
+  for(const row of projectRows){
+    mergeCounts(monthlyFailureCounts,failureCounts(row.target,monthStart,today));
+  }
+  const failureTop=Object.entries(monthlyFailureCounts)
+    .sort((a,b)=>b[1]-a[1] || a[0].localeCompare(b[0]))
+    .slice(0,10);
+
+  const top=projectRows
+    .slice()
+    .sort((a,b)=>b.cur-a.cur || b.best-a.best || b.all.rate-a.all.rate)
+    .slice(0,5);
+
+  let summaryHtml=`
+    <div class="stcard">
+      <div class="dashgrid">
+        <div class="dashitem"><div class="dashlbl">최고 현재 연속</div><div class="dashval">${maxCurrent}일 🔥</div></div>
+        <div class="dashitem"><div class="dashlbl">전체 최고 연속</div><div class="dashval">${maxBest}일 🏆</div></div>
+        <div class="dashitem"><div class="dashlbl">전체 성공률</div><div class="dashval">${overallRate}%</div></div>
+        <div class="dashitem"><div class="dashlbl">총 완료 체크</div><div class="dashval">${totalDone}회</div></div>
       </div>
-      <table style="width:100%;border-collapse:collapse">${rows}</table>
+    </div>
+
+    <div class="stcard">
+      <div class="stpn" style="margin-bottom:8px">🏅 TOP 5</div>
+      ${top.map((x,i)=>`<div class="rankrow">
+        <div class="ranknum">${i+1}</div>
+        <div class="rankname">${x.proj.name}</div>
+        <div class="rankval">🔥 ${x.cur}일</div>
+      </div>`).join("")}
     </div>`;
-  }).join("");
+
+  let projectsHtml="";
+  let analysisReports="";
+
+  for(const row of projectRows){
+    const {proj,target,all,week,month,cur,best}=row;
+    const sm=statusMessage(target,today);
+    const projDay=dd(proj.start,today)+1;
+
+    const recent=[];
+    for(let i=6;i>=0;i--){
+      const d=new Date();
+      d.setDate(d.getDate()-i);
+      const k=localKey(d);
+      const st=dayStatus(target,k);
+      recent.push({
+        label:["일","월","화","수","목","금","토"][d.getDay()],
+        cls:!st.scheduled?"off":st.complete?"ok":"fail",
+        title:!st.scheduled?"예정 없음":st.complete?"성공":`${st.done}/${st.scheduled}`
+      });
+    }
+
+    let catHtml="";
+    if(proj.cats && proj.cats.length){
+      catHtml=proj.cats.map(cat=>{
+        const ct={kind:"category",proj,cat};
+        const cs=targetStats(ct);
+        const ccur=currentStreak(ct);
+        const cbest=bestStreak(ct);
+        const csm=statusMessage(ct,today);
+        return `<div class="catstat">
+          <div class="catstathead">
+            <div class="cbar" style="background:${cat.color};height:15px"></div>
+            <div class="catstatname">${cat.name}</div>
+            <div class="catstatnums">🔥${ccur} · 🏆${cbest} · ${cs.rate}%</div>
+          </div>
+          <div class="statusline ${csm.cls}">${csm.text}</div>
+        </div>`;
+      }).join("");
+    }
+
+    const achieved=MS.filter(m=>projDay>=m.d);
+    const next=MS.find(m=>projDay<m.d);
+    const msBadges=achieved.map(m=>`<span style="font-size:15px">${m.e}</span>`).join("");
+    const detailId=`statproj-${proj.id}`;
+
+    projectsHtml+=`
+      <button class="project-list-btn" onclick="toggleProjectDetail('${detailId}',this)">
+        <div class="cbar" style="background:${proj.color};height:18px"></div>
+        <div class="project-list-name">${proj.name}</div>
+        <div class="project-list-stat">🔥 ${cur}일 · ${all.rate}%</div>
+        <div class="project-arrow">›</div>
+      </button>
+
+      <div class="project-detail" id="${detailId}">
+        <div class="stcard">
+          <div class="stch" style="margin-bottom:10px">
+            <div class="cbar" style="background:${proj.color};height:18px"></div>
+            <div class="stpn">${proj.name}</div>
+            <div class="std">D+${projDay}</div>
+          </div>
+
+          <div class="dashgrid">
+            <div class="dashitem"><div class="dashlbl">현재 연속</div><div class="dashval">${cur}일</div></div>
+            <div class="dashitem"><div class="dashlbl">최고 연속</div><div class="dashval">${best}일</div></div>
+            <div class="dashitem"><div class="dashlbl">전체 성공률</div><div class="dashval">${all.rate}%</div></div>
+            <div class="dashitem"><div class="dashlbl">총 완료</div><div class="dashval">${all.doneItems}회</div></div>
+          </div>
+
+          <div class="statusline ${sm.cls}" style="margin-bottom:10px">${sm.text}</div>
+
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px">
+            <span>최근 7일 ${week.rate}%</span><span>이번 달 ${month.rate}%</span>
+          </div>
+          <div class="miniheat">
+            ${recent.map(x=>`<div class="heatday ${x.cls}" title="${x.title}">${x.label}</div>`).join("")}
+          </div>
+
+          ${catHtml}
+
+          <div style="margin-top:12px">
+            ${msBadges?`<div style="display:flex;gap:4px;margin-bottom:6px">${msBadges}</div>`:""}
+            ${next?`<div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:4px">
+                <span>다음 목표 ${next.e} D+${next.d}</span><span>${projDay}/${next.d}일</span>
+              </div>
+              <div class="barbg"><div class="barfill" style="background:${proj.color};width:${Math.min(projDay/next.d*100,100)}%"></div></div>
+            </div>`:""}
+          </div>
+        </div>
+      </div>`;
+
+    analysisReports+=`
+      <div class="stcard">
+        <div class="stch" style="margin-bottom:8px">
+          <div class="cbar" style="background:${proj.color};height:18px"></div>
+          <div class="stpn">${proj.name}</div>
+        </div>
+        ${yesterdayReport(target)}
+      </div>`;
+  }
+
+  const analysisHtml=`
+    <div class="stcard">
+      <div class="stpn" style="margin-bottom:4px">📊 이번 달 가장 많이 놓친 습관</div>
+      ${failureTop.length
+        ?failureTop.map((x,i)=>`<div class="failrank">
+            <div class="ranknum">${i<3?["🥇","🥈","🥉"][i]:i+1}</div>
+            <div class="failname">${x[0]}</div>
+            <div class="failcount">${x[1]}회</div>
+          </div>`).join("")
+        :`<div class="statusline statusok">이번 달에는 기록된 실패가 없습니다.</div>`}
+    </div>
+    ${analysisReports}`;
+
+  el.innerHTML=`
+    <div class="stat-tabs">
+      <button class="stat-tab ${currentStatsTab==="summary"?"active":""}" data-tab="summary" onclick="showStatsTab('summary')">요약</button>
+      <button class="stat-tab ${currentStatsTab==="projects"?"active":""}" data-tab="projects" onclick="showStatsTab('projects')">프로젝트</button>
+      <button class="stat-tab ${currentStatsTab==="analysis"?"active":""}" data-tab="analysis" onclick="showStatsTab('analysis')">분석</button>
+    </div>
+
+    <div class="stat-panel ${currentStatsTab==="summary"?"active":""}" id="stat-summary">${summaryHtml}</div>
+    <div class="stat-panel ${currentStatsTab==="projects"?"active":""}" id="stat-projects">${projectsHtml}</div>
+    <div class="stat-panel ${currentStatsTab==="analysis"?"active":""}" id="stat-analysis">${analysisHtml}</div>`;
 }
 
 // ── 설정 ──
@@ -842,17 +1376,23 @@ function renderSettings(){
       ${MS.map(m=>`<div class="seti"><span class="setil">${m.e} ${m.t}</span><span class="setiv">D+${m.d}</span></div>`).join("")}
     </div>
     <div class="setsec"><div class="setst">데이터</div>
-      <div class="seti" onclick="toggleExport()" style="cursor:pointer"><span class="setil">📤 내보내기 / 불러오기</span></div>
+      <div class="seti" onclick="toggleExport()" style="cursor:pointer"><span class="setil">📤 JSON 백업 / 복원</span></div>
       <div id="export-area" style="display:none;margin-top:8px">
-        <textarea id="export-text" style="width:100%;height:120px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:11px;padding:10px;font-family:monospace;resize:none"></textarea>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button onclick="loadFromText()" style="flex:1;background:var(--text);color:var(--bg);border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer">불러오기</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button onclick="exportJsonFile()" style="flex:1;min-width:140px;background:var(--text);color:var(--bg);border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:700;cursor:pointer">JSON 내보내기</button>
+          <button onclick="document.getElementById('import-json-file').click()" style="flex:1;min-width:140px;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:11px;font-size:13px;font-weight:700;cursor:pointer">JSON 불러오기</button>
+          <input id="import-json-file" type="file" accept="application/json,.json" style="display:none" onchange="importJsonFile(event)">
         </div>
-        <div style="font-size:11px;color:var(--text2);margin-top:6px">위 텍스트를 복사해서 보관하세요. 복원할 때는 붙여넣고 불러오기를 누르세요.</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.5">아이폰에서는 내보내기를 누른 뒤 공유 화면에서 <b>파일에 저장</b>, <b>메모</b>, AirDrop 등을 선택할 수 있습니다.</div>
+        <details style="margin-top:10px">
+          <summary style="font-size:12px;color:var(--text2);cursor:pointer">텍스트로 직접 복원</summary>
+          <textarea id="export-text" placeholder="JSON 내용을 여기에 붙여넣으세요" style="width:100%;height:120px;margin-top:8px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:11px;padding:10px;font-family:monospace;resize:none"></textarea>
+          <button onclick="loadFromText()" style="width:100%;margin-top:8px;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer">붙여넣은 내용 복원</button>
+        </details>
       </div>
       <div class="seti" onclick="localStorage.removeItem('${KEY}');location.reload()" style="cursor:pointer"><span class="setil" style="color:#f87171">데이터 초기화</span></div>
     </div>
-    <div style="text-align:center;padding:24px;color:var(--text3);font-size:12px">천 쑥과마늘 v6.0</div>`;
+    <div style="text-align:center;padding:24px;color:var(--text3);font-size:12px">천 쑥과마늘 v7 JSON 백업 아이폰 대응</div>`;
 }
 
 // 맨 위로 버튼
@@ -862,18 +1402,76 @@ window.addEventListener("scroll",()=>{
 
 function toggleExport(){
   const area=document.getElementById("export-area");
-  const txt=document.getElementById("export-text");
-  if(area.style.display==="none"){
-    area.style.display="block";
-    txt.value=JSON.stringify(db,null,2);
-  } else {
-    area.style.display="none";
+  area.style.display=area.style.display==="none"?"block":"none";
+}
+
+function backupFileName(){
+  const d=new Date();
+  const p=n=>String(n).padStart(2,"0");
+  return `천_쑥과마늘_백업_${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${p(d.getHours())}-${p(d.getMinutes())}.json`;
+}
+
+async function exportJsonFile(){
+  try{
+    const json=JSON.stringify(db,null,2);
+    const file=new File([json],backupFileName(),{type:"application/json"});
+
+    // iPhone Safari: 공유 시트에서 파일, 메모, AirDrop 등을 선택
+    if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+      await navigator.share({files:[file],title:"천 쑥과마늘 백업"});
+      return;
+    }
+
+    // 공유 기능이 없는 브라우저: 일반 파일 다운로드
+    const url=URL.createObjectURL(file);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download=file.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    alert("JSON 백업 파일을 저장했습니다.");
+  }catch(err){
+    if(err && err.name==="AbortError")return;
+    console.error(err);
+    // 최후의 대안: 텍스트를 표시해 데이터 자체는 잃지 않도록 함
+    const txt=document.getElementById("export-text");
+    if(txt){
+      txt.value=JSON.stringify(db,null,2);
+      txt.closest("details").open=true;
+    }
+    alert("파일 공유를 열지 못해 JSON 내용을 아래에 표시했습니다.");
   }
 }
+
+async function importJsonFile(event){
+  const input=event.target;
+  const file=input.files && input.files[0];
+  if(!file)return;
+  try{
+    const text=await file.text();
+    const data=JSON.parse(text);
+    if(!data || typeof data!=="object" || Array.isArray(data))throw new Error("invalid backup");
+    if(!confirm("현재 데이터를 선택한 백업으로 바꿀까요?"))return;
+    db=data;
+    sv();
+    alert("백업을 복원했습니다.");
+    location.reload();
+  }catch(err){
+    console.error(err);
+    alert("올바른 JSON 백업 파일이 아닙니다.");
+  }finally{
+    input.value="";
+  }
+}
+
 function loadFromText(){
   try{
     const data=JSON.parse(document.getElementById("export-text").value);
-    db=data;sv();location.reload();
+    if(!data || typeof data!=="object" || Array.isArray(data))throw new Error("invalid backup");
+    if(!confirm("현재 데이터를 붙여넣은 백업으로 바꿀까요?"))return;
+    db=data;sv();alert("백업을 복원했습니다.");location.reload();
   }catch{alert("형식이 올바르지 않아요.");}
 }
 
