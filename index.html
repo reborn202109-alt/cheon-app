@@ -327,6 +327,7 @@
       <button class="btn-ghost" style="flex:1" onclick="cm('mc')">취소</button>
       <button class="btn-primary" style="flex:2" id="mcok">추가</button>
     </div>
+    <button class="btn-ghost" id="mcexport" style="display:none;width:100%;margin-top:10px">프로젝트로 다시 내보내기</button>
     <button class="btn-danger" id="mcdel" style="display:none">삭제</button>
   </div>
 </div>
@@ -519,9 +520,21 @@ function targetItems(target,date){
   return [];
 }
 
+function projectRealStart(proj){
+  if(!proj?.cats || proj.cats.length===0) return proj?.start||td();
+  const starts=[];
+  for(const c of proj.cats){
+    if(c.start) starts.push(c.start);
+    for(const s of (c.subs||[])){
+      if(s.start) starts.push(s.start);
+    }
+  }
+  return starts.length?starts.sort()[0]:(proj.start||td());
+}
+
 function targetStart(target){
   if(target.kind==="category") return target.cat.start;
-  return target.proj.start;
+  return projectRealStart(target.proj);
 }
 
 function dayStatus(target,date){
@@ -755,12 +768,12 @@ function renderHome(){
     html+=`<div class="empty">아직 프로젝트가 없어요.<br>아래 버튼으로 첫 프로젝트를 만들어보세요! 🌱</div>`;
   } else {
     for(const proj of db.p){
-      const day=dd(proj.start,t)+1;
+      const day=dd(projectRealStart(proj),t)+1;
       const log=db.logs[t]||{};
       const isBad=proj.type==="bad";
       const freq=proj.freq||1;
       const doesT=sd(proj.days,proj.freq||1,proj.start,t);
-      const hasCats=proj.cats.length>0;
+      const hasCats=!!(proj.isGroup || (proj.cats && proj.cats.length>0));
 
       if(!hasCats){
         // 단독 프로젝트
@@ -1009,7 +1022,7 @@ function renderDetail(){
   const st=currentStreak(target);
   const bst=bestStreak(target);
   const sm=statusMessage(target,t);
-  const day=dd(proj.start,t)+1;
+  const day=dd(projectRealStart(proj),t)+1;
   const pid=proj.id;
 
   let html=`
@@ -1017,7 +1030,7 @@ function renderDetail(){
       <button class="backbtn" data-act="back">←</button>
       <div class="dtitle-wrap">
         <div class="ddot-row"><div class="ddot" style="background:${proj.color}"></div><div class="dname">${proj.name}</div></div>
-        <div class="dsub">D+${day} / 1000 · ${fd(proj.start)} 시작</div>
+        <div class="dsub">D+${day} / 1000 · ${fd(projectRealStart(proj))} 시작</div>
       </div>
       <button class="daddbtn" data-act="addcat">＋</button>
     </div>
@@ -1148,7 +1161,7 @@ function renderDetail(){
 
 function checkMs(proj){
   // 마일스톤은 실제 달성일에만 표시 (D+1 이상)
-  const day=dd(proj.start,td())+1;
+  const day=dd(projectRealStart(proj),td())+1;
   if(day<66)return;
   if(!db.ms[proj.id])db.ms[proj.id]={};
   for(const ms of MS){
@@ -1249,26 +1262,31 @@ document.getElementById("importok").onclick=()=>{
   const selected=Array.from(document.querySelectorAll("#importlist input[type=checkbox]:checked")).map(x=>x.value);
   if(!selected.length)return;
 
-  // 대상 프로젝트는 묶음의 제목으로만 사용한다.
-  // 이전에 단독 프로젝트로 자동 생성된 부모 체크 기록은 제거한다.
+  const moving=db.p.filter(p=>selected.includes(p.id) && p.id!==target.id && (!p.cats || p.cats.length===0));
+  if(!moving.length)return;
+
   if(!target.cats) target.cats=[];
+
+  // 부모는 제목 전용 묶음으로 전환
+  target.isGroup=true;
+
+  // 부모가 예전에 단독 습관이었을 때 남아 있던 기록 제거
   for(const date of Object.keys(db.logs||{})){
-    if(db.logs[date] && Object.prototype.hasOwnProperty.call(db.logs[date],target.id)){
+    if(Object.prototype.hasOwnProperty.call(db.logs[date]||{},target.id)){
       delete db.logs[date][target.id];
       if(!Object.keys(db.logs[date]).length) delete db.logs[date];
     }
   }
   for(const date of Object.keys(db.failures||{})){
-    if(db.failures[date] && Object.prototype.hasOwnProperty.call(db.failures[date],target.id)){
+    if(Object.prototype.hasOwnProperty.call(db.failures[date]||{},target.id)){
       delete db.failures[date][target.id];
       if(!Object.keys(db.failures[date]).length) delete db.failures[date];
     }
   }
 
-  const moving=db.p.filter(p=>selected.includes(p.id) && (!p.cats || p.cats.length===0));
-
+  const existingIds=new Set(target.cats.map(c=>c.id));
   for(const p of moving){
-    // 같은 id를 유지하므로 성공 기록과 실패 이유가 그대로 연결됨
+    if(existingIds.has(p.id)) continue;
     target.cats.push({
       id:p.id,
       name:p.name,
@@ -1277,13 +1295,18 @@ document.getElementById("importok").onclick=()=>{
       freq:p.freq||1,
       color:p.color,
       start:p.start,
-      subs:[]
+      subs:[...(p.subs||[])]
     });
-    if(p.start<target.start)target.start=p.start;
   }
 
-  db.p=db.p.filter(p=>!selected.includes(p.id));
+  // 선택한 단독 프로젝트만 최상위 목록에서 제거
+  const movingIds=new Set(moving.map(p=>p.id));
+  db.p=db.p.filter(p=>!movingIds.has(p.id));
+
+  // 묶음 시작일은 실제 자식 기준으로 재계산
+  target.start=projectRealStart(target);
   exp["p_"+target.id]=true;
+
   sv();
   cm("mimport");
   renderHome();
@@ -1313,6 +1336,7 @@ function openCatModal(projId,catId=null){
   document.getElementById("mccprev").style.background=c;
   document.getElementById("mcdt").value=cat?cat.start:td();
   document.getElementById("mcdel").style.display=cat?"block":"none";
+  document.getElementById("mcexport").style.display=cat?"block":"none";
   om("mc");
 }
 document.getElementById("mcok").onclick=()=>{
@@ -1338,6 +1362,66 @@ document.getElementById("mcok").onclick=()=>{
   sv();cm("mc");
   if(curP===projId)renderDetail();else renderHome();
 };
+document.getElementById("mcexport").onclick=()=>{
+  const parent=db.p.find(p=>p.id===ecpid);
+  const cat=parent?.cats?.find(c=>c.id===ecid);
+  if(!parent || !cat)return;
+
+  // 세부 습관이 있는 카테고리는 구조를 잃지 않도록 한 개 카테고리를 가진 독립 프로젝트로 내보낸다.
+  let exported;
+  if(cat.subs && cat.subs.length){
+    exported={
+      id:uid(),
+      name:cat.name,
+      start:cat.start||td(),
+      type:cat.type||"good",
+      days:[...(cat.days||[])],
+      freq:cat.freq||1,
+      color:cat.color||parent.color||"#4ade80",
+      cats:[{
+        id:cat.id,
+        name:cat.name,
+        start:cat.start||td(),
+        type:cat.type||"good",
+        days:[...(cat.days||[])],
+        freq:cat.freq||1,
+        color:cat.color||parent.color||"#4ade80",
+        subs:(cat.subs||[]).map(s=>({...s,days:[...(s.days||[])]}))
+      }],
+      isGroup:true
+    };
+  }else{
+    // 원래 가져온 단독 프로젝트는 같은 ID를 유지해 기록과 통계를 그대로 연결
+    exported={
+      id:cat.id,
+      name:cat.name,
+      start:cat.start||td(),
+      type:cat.type||"good",
+      days:[...(cat.days||[])],
+      freq:cat.freq||1,
+      color:cat.color||parent.color||"#4ade80",
+      cats:[]
+    };
+  }
+
+  parent.cats=parent.cats.filter(c=>c.id!==cat.id);
+
+  const parentIndex=db.p.findIndex(p=>p.id===parent.id);
+  db.p.splice(parentIndex+1,0,exported);
+
+  // 마지막 카테고리까지 내보냈다면 빈 제목 묶음은 자동 제거
+  if(parent.cats.length===0){
+    db.p=db.p.filter(p=>p.id!==parent.id);
+  }else{
+    parent.start=projectRealStart(parent);
+  }
+
+  sv();
+  cm("mc");
+  curP=exported.id;
+  renderHome();
+};
+
 document.getElementById("mcdel").onclick=()=>{
   const proj=db.p.find(p=>p.id===ecpid);
   if(proj){proj.cats=proj.cats.filter(c=>c.id!==ecid);sv();}
@@ -1475,7 +1559,7 @@ function renderStats(){
   for(const row of projectRows){
     const {proj,target,all,week,month,cur,best}=row;
     const sm=statusMessage(target,today);
-    const projDay=dd(proj.start,today)+1;
+    const projDay=dd(projectRealStart(proj),today)+1;
 
     const recent=[];
     for(let i=6;i>=0;i--){
