@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>천 쑥과마늘</title>
+  <!-- 그룹 프로젝트는 제목 전용, 주기와 기록은 카테고리에서 관리 -->
+<title>천 쑥과마늘</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet"/>
   <style>
     :root{--bg:#0a0a0a;--bg2:#141414;--bg3:#1e1e1e;--border:#2a2a2a;--text:#f0f0f0;--text2:#888;--text3:#444;}
@@ -30,6 +31,11 @@
     .home-title{font-size:26px;font-weight:900;letter-spacing:-1px;}
     .list{padding:0 16px;display:flex;flex-direction:column;gap:8px;}
     .add-dashed{margin:8px 16px 0;background:none;border:1px dashed var(--border);color:var(--text2);border-radius:14px;padding:14px;width:calc(100% - 32px);font-size:14px;}
+
+    .project-card{transition:transform .16s ease,opacity .16s ease,box-shadow .16s ease;}
+    .project-card.dragging{opacity:.58;box-shadow:0 14px 36px rgba(0,0,0,.45);transform:scale(.985);}
+    .drag-handle{width:26px;height:34px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--text3);font-size:18px;font-weight:900;touch-action:none;cursor:grab;flex-shrink:0;letter-spacing:-4px;padding-right:4px;}
+    .drag-handle:active{cursor:grabbing;color:var(--text2);}
 
     /* 카드/행 */
     .card{background:var(--bg2);border-radius:14px;border:1px solid var(--border);overflow:hidden;}
@@ -189,6 +195,12 @@
     .history-item{padding:11px 12px;border-radius:11px;background:var(--bg3);border:1px solid var(--border)}
     .history-head{display:flex;justify-content:space-between;gap:10px;font-size:13px;font-weight:800}
     .history-reason{margin-top:5px;font-size:12px;color:var(--text2);line-height:1.5}
+    .import-list{display:flex;flex-direction:column;gap:8px;max-height:42vh;overflow:auto}
+    .import-item{display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:11px}
+    .import-item input{width:20px;height:20px;flex-shrink:0}
+    .import-name{font-size:14px;font-weight:800;flex:1}
+    .import-meta{font-size:11px;color:var(--text2);margin-top:3px}
+    .import-empty{text-align:center;color:var(--text3);font-size:13px;padding:28px 10px;line-height:1.7}
 
 </style>
 </head>
@@ -221,13 +233,14 @@
   <div class="modal">
     <div class="mtitle" id="mpt">새 프로젝트</div>
     <div class="mfield"><div class="mlbl">이름</div><input id="mpn" placeholder="예: 독서, 금연"/></div>
-    <div class="mfield"><div class="mlbl">종류</div>
+    <div class="mfield" id="mptitleonly" style="display:none"><div class="import-empty" style="padding:10px 4px">이 프로젝트는 카테고리를 묶는 제목입니다.<br>주기와 체크 기록은 아래 카테고리에서 관리됩니다.</div></div>
+    <div class="mfield" id="mptypefield"><div class="mlbl">종류</div>
       <div class="topts" id="mptyp">
         <button class="topt sel" data-v="good">✓ 좋은 습관</button>
         <button class="topt" data-v="bad">✗ 나쁜 습관 끊기</button>
       </div>
     </div>
-    <div class="mfield"><div class="mlbl">주기</div>
+    <div class="mfield" id="mpfreqfield"><div class="mlbl">주기</div>
       <div class="freqs" id="mpfrq">
         <button class="fopt sel" data-v="1">매일</button>
         <button class="fopt" data-v="2">격일</button>
@@ -236,7 +249,7 @@
         <button class="fopt" data-v="7">주1회</button>
       </div>
     </div>
-    <div class="mfield"><div class="mlbl">요일 (선택시 주기 무시)</div>
+    <div class="mfield" id="mpdaysfield"><div class="mlbl">요일 (선택시 주기 무시)</div>
       <div class="days" id="mpdays">
         <button class="dopt" data-v="0">일</button>
         <button class="dopt" data-v="1">월</button>
@@ -250,12 +263,28 @@
     <div class="mfield"><div class="mlbl">색상</div>
       <div class="cpick"><div class="cprev" id="mpcprev"></div><input type="color" id="mpclr" oninput="document.getElementById('mpcprev').style.background=this.value" style="flex:1"/></div>
     </div>
-    <div class="mfield"><div class="mlbl">시작일</div><input type="date" id="mpdt"/></div>
+    <div class="mfield" id="mpstartfield"><div class="mlbl">시작일</div><input type="date" id="mpdt"/></div>
     <div class="mbtns">
       <button class="btn-ghost" style="flex:1" onclick="cm('mp')">취소</button>
       <button class="btn-primary" style="flex:2" id="mpok">추가</button>
     </div>
+    <button class="btn-ghost" id="mpimport" style="display:none;width:100%;margin-top:10px">기존 프로젝트 가져오기</button>
     <button class="btn-danger" id="mpdel" style="display:none">삭제</button>
+  </div>
+</div>
+
+<!-- 기존 프로젝트 가져오기 모달 -->
+<div class="moverlay" id="mimport">
+  <div class="modal">
+    <div class="mtitle">기존 프로젝트 가져오기</div>
+    <div class="mfield">
+      <div class="mlbl">선택한 프로젝트는 현재 프로젝트의 카테고리로 이동합니다.</div>
+      <div class="import-list" id="importlist"></div>
+    </div>
+    <div class="mbtns">
+      <button class="btn-ghost" style="flex:1" onclick="cm('mimport')">취소</button>
+      <button class="btn-primary" style="flex:2" id="importok">가져오기</button>
+    </div>
   </div>
 </div>
 
@@ -737,8 +766,9 @@ function renderHome(){
         // 단독 프로젝트
         const ck=!!log[proj.id];
         const chkStyle=ck&&!isBad?`background:${proj.color};border-color:${proj.color}`:"";
-        html+=`<div class="card">
+        html+=`<div class="card project-card" data-project-id="${proj.id}">
           <div class="row" onclick="openDetail('${proj.id}')">
+            <button class="drag-handle" data-drag-project="${proj.id}" onclick="event.stopPropagation()" aria-label="프로젝트 순서 변경">⠿</button>
             <div class="cbar" style="background:${proj.color}"></div>
             <div class="rinfo" style="cursor:pointer">
               <div class="rname">${proj.name}<span class="badge ${isBad?"bb":"bg"}">${isBad?"끊기":"실천"}</span></div>
@@ -756,12 +786,12 @@ function renderHome(){
         const items=gItems(proj,t);
         const done=items.filter(id=>log[id]).length;
         const isExp=!!exp["p_"+proj.id];
-        html+=`<div class="card">
+        html+=`<div class="card project-card" data-project-id="${proj.id}">
           <div class="row">
+            <button class="drag-handle" data-drag-project="${proj.id}" onclick="event.stopPropagation()" aria-label="프로젝트 순서 변경">⠿</button>
             <div class="cbar" style="background:${proj.color};cursor:pointer" onclick="toggleExp('p_${proj.id}');renderHome()"></div>
             <div class="rinfo" onclick="openDetail('${proj.id}')" style="cursor:pointer">
-              <div class="rname">${proj.name}<span class="badge ${isBad?"bb":"bg"}">${isBad?"끊기":"실천"}</span></div>
-              ${(()=>{const sm=statusMessage({kind:"project",proj},t);return `<div class="statusline ${sm.cls}">${sm.text}</div>`;})()}
+              <div class="rname">${proj.name}<span class="badge" style="background:var(--bg3);color:var(--text2)">묶음</span></div>
             </div>
             <button class="ebtn" onclick="event.stopPropagation();openCatModal('${proj.id}')">＋</button>
             <button class="ebtn" onclick="event.stopPropagation();openProjModal('${proj.id}')">수정</button>
@@ -809,6 +839,66 @@ function renderHome(){
   }
   html+=`</div><button class="add-dashed" onclick="openProjModal()">+ 새 프로젝트</button>`;
   el.innerHTML=html;
+  initProjectReorder();
+}
+
+// 홈 프로젝트 순서 변경: 손잡이를 누른 채 위아래로 이동
+function initProjectReorder(){
+  const list=document.querySelector("#vh .list");
+  if(!list)return;
+
+  list.querySelectorAll(".drag-handle").forEach(handle=>{
+    handle.onpointerdown=e=>{
+      e.preventDefault();
+      e.stopPropagation();
+
+      const card=handle.closest(".project-card");
+      if(!card)return;
+
+      const pointerId=e.pointerId;
+      let moved=false;
+      let lastTarget=null;
+
+      card.classList.add("dragging");
+      handle.setPointerCapture?.(pointerId);
+
+      const move=ev=>{
+        if(ev.pointerId!==pointerId)return;
+        ev.preventDefault();
+        moved=true;
+
+        const hit=document.elementFromPoint(ev.clientX,ev.clientY);
+        const target=hit?.closest?.(".project-card");
+        if(!target || target===card || !list.contains(target) || target===lastTarget)return;
+
+        lastTarget=target;
+        const rect=target.getBoundingClientRect();
+        const before=ev.clientY < rect.top + rect.height/2;
+        list.insertBefore(card,before?target:target.nextSibling);
+      };
+
+      const finish=ev=>{
+        if(ev.pointerId!==pointerId)return;
+        card.classList.remove("dragging");
+        handle.releasePointerCapture?.(pointerId);
+        handle.removeEventListener("pointermove",move);
+        handle.removeEventListener("pointerup",finish);
+        handle.removeEventListener("pointercancel",finish);
+
+        if(!moved)return;
+
+        const order=Array.from(list.querySelectorAll(".project-card")).map(x=>x.dataset.projectId);
+        const byId=new Map(db.p.map(p=>[p.id,p]));
+        db.p=order.map(id=>byId.get(id)).filter(Boolean);
+        sv();
+        renderHome();
+      };
+
+      handle.addEventListener("pointermove",move);
+      handle.addEventListener("pointerup",finish);
+      handle.addEventListener("pointercancel",finish);
+    };
+  });
 }
 
 function toggleExp(key){exp[key]=!exp[key];}
@@ -1059,6 +1149,14 @@ function openProjModal(projId=null){
   document.getElementById("mpclr").value=c;
   document.getElementById("mpcprev").style.background=c;
   document.getElementById("mpdel").style.display=proj?"block":"none";
+  document.getElementById("mpimport").style.display=proj?"block":"none";
+
+  const titleOnly=!!(proj && proj.cats && proj.cats.length);
+  document.getElementById("mptitleonly").style.display=titleOnly?"block":"none";
+  ["mptypefield","mpfreqfield","mpdaysfield","mpstartfield"].forEach(id=>{
+    document.getElementById(id).style.display=titleOnly?"none":"block";
+  });
+
   om("mp");
 }
 document.getElementById("mpok").onclick=()=>{
@@ -1071,7 +1169,12 @@ document.getElementById("mpok").onclick=()=>{
   const color=document.getElementById("mpclr").value;
   if(epid){
     const proj=db.p.find(p=>p.id===epid);
-    proj.name=name;proj.start=start;proj.type=type;proj.days=days;proj.freq=freq;proj.color=color;
+    const titleOnly=!!(proj.cats && proj.cats.length);
+    proj.name=name;
+    proj.color=color;
+    if(!titleOnly){
+      proj.start=start;proj.type=type;proj.days=days;proj.freq=freq;
+    }
   } else {
     const proj={id:uid(),name,start,type,days,freq,color,cats:[]};
     db.p.push(proj);
@@ -1079,6 +1182,82 @@ document.getElementById("mpok").onclick=()=>{
   }
   sv();cm("mp");renderHome();
 };
+// 기존 단독 프로젝트를 현재 프로젝트의 카테고리로 이동
+function openImportProjects(){
+  const target=db.p.find(p=>p.id===epid);
+  if(!target)return;
+
+  // 현재 구조에서 안전하게 기록을 온전히 보존할 수 있는 단독 프로젝트만 표시
+  const candidates=db.p.filter(p=>p.id!==target.id && (!p.cats || p.cats.length===0));
+  const el=document.getElementById("importlist");
+
+  if(!candidates.length){
+    el.innerHTML=`<div class="import-empty">가져올 수 있는 단독 프로젝트가 없습니다.<br>카테고리가 없는 프로젝트만 이동할 수 있어요.</div>`;
+  }else{
+    el.innerHTML=candidates.map(p=>`
+      <label class="import-item">
+        <input type="checkbox" value="${p.id}">
+        <div class="cbar" style="background:${p.color}"></div>
+        <div style="flex:1">
+          <div class="import-name">${esc(p.name)}</div>
+          <div class="import-meta">${p.type==="bad"?"나쁜 습관 끊기":"좋은 습관"} · ${fl(p.days,p.freq||1)} · ${fd(p.start)} 시작</div>
+        </div>
+      </label>
+    `).join("");
+  }
+  cm("mp");
+  om("mimport");
+}
+
+document.getElementById("mpimport").onclick=openImportProjects;
+
+document.getElementById("importok").onclick=()=>{
+  const target=db.p.find(p=>p.id===epid);
+  if(!target)return;
+
+  const selected=Array.from(document.querySelectorAll("#importlist input[type=checkbox]:checked")).map(x=>x.value);
+  if(!selected.length)return;
+
+  // 대상 프로젝트는 묶음의 제목으로만 사용한다.
+  // 이전에 단독 프로젝트로 자동 생성된 부모 체크 기록은 제거한다.
+  if(!target.cats) target.cats=[];
+  for(const date of Object.keys(db.logs||{})){
+    if(db.logs[date] && Object.prototype.hasOwnProperty.call(db.logs[date],target.id)){
+      delete db.logs[date][target.id];
+      if(!Object.keys(db.logs[date]).length) delete db.logs[date];
+    }
+  }
+  for(const date of Object.keys(db.failures||{})){
+    if(db.failures[date] && Object.prototype.hasOwnProperty.call(db.failures[date],target.id)){
+      delete db.failures[date][target.id];
+      if(!Object.keys(db.failures[date]).length) delete db.failures[date];
+    }
+  }
+
+  const moving=db.p.filter(p=>selected.includes(p.id) && (!p.cats || p.cats.length===0));
+
+  for(const p of moving){
+    // 같은 id를 유지하므로 성공 기록과 실패 이유가 그대로 연결됨
+    target.cats.push({
+      id:p.id,
+      name:p.name,
+      type:p.type,
+      days:[...(p.days||[])],
+      freq:p.freq||1,
+      color:p.color,
+      start:p.start,
+      subs:[]
+    });
+    if(p.start<target.start)target.start=p.start;
+  }
+
+  db.p=db.p.filter(p=>!selected.includes(p.id));
+  exp["p_"+target.id]=true;
+  sv();
+  cm("mimport");
+  renderHome();
+};
+
 document.getElementById("mpdel").onclick=()=>{
   db.p=db.p.filter(p=>p.id!==epid);
   sv();cm("mp");renderHome();
