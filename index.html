@@ -457,6 +457,18 @@ function addDays(date,n){
   return localKey(d);
 }
 
+// 새 프로젝트/카테고리를 과거 시작일로 등록하면 예정된 날을 오늘까지 성공으로 자동 기록
+function fillPastSuccess(item,start,days,freq){
+  const end=td();
+  if(!start || start>end) return;
+  for(let k=start;k<=end;k=addDays(k,1)){
+    if(!sd(days,freq||1,start,k)) continue;
+    if(!db.logs[k]) db.logs[k]={};
+    db.logs[k][item.id]=true;
+    removeFailure(k,item.id);
+  }
+}
+
 function itemNameMap(proj){
   const map={[proj.id]:proj.name};
   for(const c of (proj.cats||[])){
@@ -1061,7 +1073,9 @@ document.getElementById("mpok").onclick=()=>{
     const proj=db.p.find(p=>p.id===epid);
     proj.name=name;proj.start=start;proj.type=type;proj.days=days;proj.freq=freq;proj.color=color;
   } else {
-    db.p.push({id:uid(),name,start,type,days,freq,color,cats:[]});
+    const proj={id:uid(),name,start,type,days,freq,color,cats:[]};
+    db.p.push(proj);
+    fillPastSuccess(proj,start,days,freq);
   }
   sv();cm("mp");renderHome();
 };
@@ -1107,7 +1121,9 @@ document.getElementById("mcok").onclick=()=>{
     const cat=proj.cats.find(c=>c.id===ecid);
     if(cat){cat.name=name;cat.type=type;cat.days=days;cat.freq=freq;cat.color=color;cat.start=start;}
   } else {
-    proj.cats.push({id:uid(),name,type,days,freq,color,start,subs:[]});
+    const cat={id:uid(),name,type,days,freq,color,start,subs:[]};
+    proj.cats.push(cat);
+    fillPastSuccess(cat,start,days,freq);
   }
   sv();cm("mc");
   if(curP===projId)renderDetail();else renderHome();
