@@ -201,6 +201,8 @@
     .import-name{font-size:14px;font-weight:800;flex:1}
     .import-meta{font-size:11px;color:var(--text2);margin-top:3px}
     .import-empty{text-align:center;color:var(--text3);font-size:13px;padding:28px 10px;line-height:1.7}
+    .scheduled-badge{display:inline-flex;align-items:center;gap:4px;background:#2b2414;color:#fbbf24;border:1px solid #594821;border-radius:6px;padding:3px 7px;font-size:11px;font-weight:800}
+    .scheduled-card{opacity:.72}
 
 </style>
 </head>
@@ -357,10 +359,12 @@
         <button class="dopt" data-v="6">토</button>
       </div>
     </div>
+    <div class="mfield"><div class="mlbl">시작일</div><input type="date" id="msubdt"/></div>
     <div class="mbtns">
       <button class="btn-ghost" style="flex:1" onclick="cm('msub')">취소</button>
       <button class="btn-primary" style="flex:2" id="msubok">추가</button>
     </div>
+    <button class="btn-danger" id="msubdel" style="display:none">삭제</button>
   </div>
 </div>
 
@@ -392,7 +396,8 @@
 </div>
 
 <script>
-const KEY="cheon_v6";
+const KEY="cheon_v8";
+const LEGACY_KEYS=["cheon_v7","cheon_v6"];
 const MS=[
   {d:66,e:"🌱",t:"66일 달성!",s:"습관이 몸에 배기 시작하는 시간.\n이제 진짜 내 것이 되고 있어요."},
   {d:100,e:"💯",t:"100일 달성!",s:"100일 챌린지 완성!\n꾸준함이 만들어낸 기적이에요."},
@@ -400,7 +405,41 @@ const MS=[
   {d:730,e:"🔥",t:"2년 달성!",s:"2년. 이건 의지가 아니라 정체성이에요.\n습관이 당신 자체가 됐습니다."},
   {d:1000,e:"🧄",t:"사람이 되셨습니다.",s:"천일의 쑥과마늘을 다 드셨습니다.\n당신은 완전히 새로운 사람이에요."},
 ];
-let db=(()=>{try{return JSON.parse(localStorage.getItem(KEY))||{p:[],logs:{},ms:{}};}catch{return{p:[],logs:{},ms:{}};}})();
+function emptyDb(){return {p:[],logs:{},ms:{},failures:{}};}
+function readLocalDb(){
+  for(const key of [KEY,...LEGACY_KEYS]){
+    try{
+      const data=JSON.parse(localStorage.getItem(key));
+      if(data&&typeof data==="object"){
+        if(key!==KEY)localStorage.setItem(KEY,JSON.stringify(data));
+        return data;
+      }
+    }catch{}
+  }
+  return emptyDb();
+}
+function normalizeDb(data){
+  const out=data&&typeof data==="object"?data:emptyDb();
+  if(!Array.isArray(out.p))out.p=[];
+  if(!out.logs||typeof out.logs!=="object")out.logs={};
+  if(!out.ms||typeof out.ms!=="object")out.ms={};
+  if(!out.failures||typeof out.failures!=="object")out.failures={};
+  for(const p of out.p){
+    if(!Array.isArray(p.cats))p.cats=[];
+    for(const c of p.cats){
+      if(!Array.isArray(c.subs))c.subs=[];
+      for(const s of c.subs){
+        if(!s.start){
+          const now=new Date();
+          const fallback=[now.getFullYear(),String(now.getMonth()+1).padStart(2,"0"),String(now.getDate()).padStart(2,"0")].join("-");
+          s.start=c.start||p.start||fallback;
+        }
+      }
+    }
+  }
+  return out;
+}
+let db=normalizeDb(readLocalDb());
 if(!db.failures)db.failures={};
 function sv(){
   db.updatedAt=new Date().toISOString();
@@ -487,6 +526,31 @@ function addDays(date,n){
   return localKey(d);
 }
 
+function isFutureStart(start,date=td()){return !!start&&start>date;}
+function dDay(start,date=td()){return Math.max(0,dd(date,start));}
+function scheduledText(start,date=td()){return `⏳ 시작 예정 · D-${dDay(start,date)}`;}
+
+function collectItemIds(item){
+  const ids=[];
+  if(item?.id)ids.push(item.id);
+  for(const c of (item?.cats||[]))ids.push(...collectItemIds(c));
+  for(const s of (item?.subs||[]))ids.push(...collectItemIds(s));
+  return ids;
+}
+
+function removeItemHistory(ids){
+  const set=new Set(Array.isArray(ids)?ids:[ids]);
+  for(const date of Object.keys(db.logs||{})){
+    for(const id of set)delete db.logs[date][id];
+    if(!Object.keys(db.logs[date]).length)delete db.logs[date];
+  }
+  for(const date of Object.keys(db.failures||{})){
+    for(const id of set)delete db.failures[date][id];
+    if(!Object.keys(db.failures[date]).length)delete db.failures[date];
+  }
+  for(const id of set)delete db.ms?.[id];
+}
+
 // 새 프로젝트/카테고리를 과거 시작일로 등록하면 예정된 날을 오늘까지 성공으로 자동 기록
 function fillPastSuccess(item,start,days,freq){
   const end=td();
@@ -509,6 +573,7 @@ function itemNameMap(proj){
 }
 
 function targetItems(target,date){
+  if(isFutureStart(targetStart(target),date))return [];
   if(target.kind==="project") return gItems(target.proj,date);
   if(target.kind==="category"){
     const c=target.cat;
@@ -537,6 +602,8 @@ function targetStart(target){
   return projectRealStart(target.proj);
 }
 
+function targetIsFuture(target,date=td()){return isFutureStart(targetStart(target),date);}
+
 function dayStatus(target,date){
   const ids=targetItems(target,date);
   const log=db.logs[date]||{};
@@ -553,6 +620,7 @@ function dayStatus(target,date){
 
 // 현재 연속: 오늘이 아직 미완료면 오늘은 보류하고 어제까지의 연속을 유지
 function currentStreak(target){
+  if(targetIsFuture(target))return 0;
   let s=0;
   let d=new Date();
   let firstScheduled=true;
@@ -627,6 +695,9 @@ function streak(proj){
 }
 
 function statusMessage(target,date=td()){
+  if(targetIsFuture(target,date)){
+    return {cls:"statuswarn",text:scheduledText(targetStart(target),date),future:true};
+  }
   const st=dayStatus(target,date);
   const isToday=date===td();
   const isPast=date<td();
@@ -768,7 +839,9 @@ function renderHome(){
     html+=`<div class="empty">아직 프로젝트가 없어요.<br>아래 버튼으로 첫 프로젝트를 만들어보세요! 🌱</div>`;
   } else {
     for(const proj of db.p){
-      const day=dd(projectRealStart(proj),t)+1;
+      const realStart=projectRealStart(proj);
+      const future=isFutureStart(realStart,t);
+      const day=future?0:dd(realStart,t)+1;
       const log=db.logs[t]||{};
       const isBad=proj.type==="bad";
       const freq=proj.freq||1;
@@ -779,19 +852,19 @@ function renderHome(){
         // 단독 프로젝트
         const ck=!!log[proj.id];
         const chkStyle=ck&&!isBad?`background:${proj.color};border-color:${proj.color}`:"";
-        html+=`<div class="card project-card" data-project-id="${proj.id}">
+        html+=`<div class="card project-card ${future?"scheduled-card":""}" data-project-id="${proj.id}">
           <div class="row" onclick="openDetail('${proj.id}')">
             <button class="drag-handle" data-drag-project="${proj.id}" onclick="event.stopPropagation()" aria-label="프로젝트 순서 변경">⠿</button>
             <div class="cbar" style="background:${proj.color}"></div>
             <div class="rinfo" style="cursor:pointer">
-              <div class="rname">${proj.name}<span class="badge ${isBad?"bb":"bg"}">${isBad?"끊기":"실천"}</span></div>
+              <div class="rname">${proj.name}<span class="badge ${isBad?"bb":"bg"}">${isBad?"끊기":"실천"}</span>${future?`<span class="scheduled-badge">${scheduledText(realStart,t)}</span>`:""}</div>
             </div>
             <button class="ebtn" onclick="event.stopPropagation();openCatModal('${proj.id}')">＋</button>
             <button class="ebtn" onclick="event.stopPropagation();openProjModal('${proj.id}')">수정</button>
-            <button class="chk ${ck?(isBad?"done-bad":"done"):""}" style="${chkStyle}"
+            ${future?"":`<button class="chk ${ck?(isBad?"done-bad":"done"):""}" style="${chkStyle}"
               onclick="event.stopPropagation();${doesT?`toggleLog('${proj.id}');renderHome()`:''}">
               ${ck?"✓":""}
-            </button>
+            </button>`}
           </div>
         </div>`;
       } else {
@@ -799,12 +872,12 @@ function renderHome(){
         const items=gItems(proj,t);
         const done=items.filter(id=>log[id]).length;
         const isExp=!!exp["p_"+proj.id];
-        html+=`<div class="card project-card" data-project-id="${proj.id}">
+        html+=`<div class="card project-card ${future?"scheduled-card":""}" data-project-id="${proj.id}">
           <div class="row">
             <button class="drag-handle" data-drag-project="${proj.id}" onclick="event.stopPropagation()" aria-label="프로젝트 순서 변경">⠿</button>
             <div class="cbar" style="background:${proj.color};cursor:pointer" onclick="toggleExp('p_${proj.id}');renderHome()"></div>
             <div class="rinfo" onclick="openDetail('${proj.id}')" style="cursor:pointer">
-              <div class="rname">${proj.name}<span class="badge" style="background:var(--bg3);color:var(--text2)">묶음</span></div>
+              <div class="rname">${proj.name}<span class="badge" style="background:var(--bg3);color:var(--text2)">묶음</span>${future?`<span class="scheduled-badge">${scheduledText(realStart,t)}</span>`:""}</div>
             </div>
             <button class="ebtn" onclick="event.stopPropagation();openCatModal('${proj.id}')">＋</button>
             <button class="ebtn" onclick="event.stopPropagation();openProjModal('${proj.id}')">수정</button>
@@ -814,20 +887,21 @@ function renderHome(){
         if(isExp){
           html+=`<div class="subitems" style="margin-left:12px;border-left:2px solid ${proj.color}44">`;
           for(const cat of proj.cats){
+            const catFuture=isFutureStart(cat.start,t);
             const isCatBad=cat.type==="bad";
             const isSolo=cat.subs.length===0;
             if(isSolo){
               const catDoes=sd(cat.days,cat.freq||1,cat.start,t);
               const ck=!!log[cat.id];
               const chkStyle=ck&&!isCatBad?`background:${cat.color};border-color:${cat.color}`:"";
-              html+=`<div class="subrow" style="${!catDoes?"opacity:.4":""}">
+              html+=`<div class="subrow" style="${!catDoes||catFuture?"opacity:.4":""}">
                 <div class="cbar" style="background:${cat.color}"></div>
                 <div class="sinfo">
-                  <div class="sname">${cat.name}<span class="badge ${isCatBad?"bb":"bg"}" style="margin-left:6px">${isCatBad?"끊기":"실천"}</span></div>
+                  <div class="sname">${cat.name}<span class="badge ${isCatBad?"bb":"bg"}" style="margin-left:6px">${isCatBad?"끊기":"실천"}</span>${catFuture?` <span class="scheduled-badge">${scheduledText(cat.start,t)}</span>`:""}</div>
                 </div>
                 <button class="ebtn" onclick="openCatModal('${proj.id}','${cat.id}')">수정</button>
-                <button class="chk ${ck?(isCatBad?"done-bad":"done"):""}" style="${chkStyle}"
-                  onclick="${catDoes?`toggleLog('${cat.id}');renderHome()`:''}">${ck?"✓":""}</button>
+                ${catFuture?"":`<button class="chk ${ck?(isCatBad?"done-bad":"done"):""}" style="${chkStyle}"
+                  onclick="${catDoes?`toggleLog('${cat.id}');renderHome()`:''}">${ck?"✓":""}</button>`}
               </div>`;
             } else {
               const catDone=cat.subs.filter(s=>sd(s.days,s.freq||1,s.start,t)&&log[s.id]).length;
@@ -1019,10 +1093,12 @@ function renderDetail(){
   const done=items.filter(id=>log[id]).length;
   const pct=items.length?Math.round(done/items.length*100):0;
   const target={kind:"project",proj};
+  const realStart=projectRealStart(proj);
+  const future=targetIsFuture(target,t);
   const st=currentStreak(target);
   const bst=bestStreak(target);
   const sm=statusMessage(target,t);
-  const day=dd(projectRealStart(proj),t)+1;
+  const day=future?0:dd(realStart,t)+1;
   const pid=proj.id;
 
   let html=`
@@ -1030,7 +1106,7 @@ function renderDetail(){
       <button class="backbtn" data-act="back">←</button>
       <div class="dtitle-wrap">
         <div class="ddot-row"><div class="ddot" style="background:${proj.color}"></div><div class="dname">${proj.name}</div></div>
-        <div class="dsub">D+${day} / 1000 · ${fd(projectRealStart(proj))} 시작</div>
+        <div class="dsub">${future?scheduledText(realStart,t):`D+${day} / 1000`} · ${fd(realStart)} 시작</div>
       </div>
       <button class="daddbtn" data-act="addcat">＋</button>
     </div>
@@ -1039,7 +1115,8 @@ function renderDetail(){
         onchange="selDate=this.value;renderDetail()"/>
       ${!isToday?`<button onclick="selDate=null;renderDetail()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:8px 12px;font-size:12px">오늘</button>`:""}
     </div>
-    <div class="sumbox">
+    <div class="sumbox ${future?"scheduled-card":""}">
+      ${future?`<div class="scheduled-badge" style="margin-bottom:12px">${scheduledText(realStart,t)}</div>`:""}
       <div class="sumrow"><span class="sumlbl">${isToday?"오늘":"선택일"} 진행률</span><span class="sumval">${pct}%</span></div>
       <div class="barbg" style="margin-bottom:10px"><div class="barfill" style="background:${proj.color};width:${pct}%"></div></div>
       <div class="sumrow"><span class="sumlbl">현재 연속</span><span class="sumval">${st}일 🔥</span></div>
@@ -1068,11 +1145,11 @@ function renderDetail(){
         <div class="rinfo">
           <div class="rname">${proj.name}<span class="badge ${isBad?"bb":"bg"}">${isBad?"끊기":"실천"}</span></div>
         </div>
-        <div class="state-actions">
+        ${future?"":`<div class="state-actions">
           <button class="failbtn ${getFailure(t,proj.id)?"active":""}" data-act="failproj" data-name="${esc(proj.name)}" data-can="${does?1:0}">✕</button>
           <button class="chk ${ck?(isBad?"done-bad":"done"):""}" style="${chkStyle}"
             data-act="checkproj" data-can="${does?1:0}">${ck?"✓":""}</button>
-        </div>
+        </div>`}
       </div>
     </div>`;
   } else {
@@ -1080,21 +1157,22 @@ function renderDetail(){
       const isBad=cat.type==="bad";
       const isSolo=cat.subs.length===0;
       const catDoes=sd(cat.days,cat.freq||1,cat.start,t);
+      const catFuture=isFutureStart(cat.start,t);
 
       if(isSolo){
         const ck=!!log[cat.id];
         const chkStyle=ck&&!isBad?`background:${cat.color};border-color:${cat.color}`:"";
-        html+=`<div class="card" style="margin-bottom:8px;${!catDoes?"opacity:.4":""}">
+        html+=`<div class="card" style="margin-bottom:8px;${!catDoes||catFuture?"opacity:.4":""}">
           <div class="row">
             <div class="cbar" style="background:${cat.color}"></div>
             <div class="rinfo">
-              <div class="rname">${cat.name}<span class="badge ${isBad?"bb":"bg"}">${isBad?"끊기":"실천"}</span></div>
+              <div class="rname">${cat.name}<span class="badge ${isBad?"bb":"bg"}">${isBad?"끊기":"실천"}</span>${catFuture?`<span class="scheduled-badge">${scheduledText(cat.start,t)}</span>`:""}</div>
             </div>
             <button class="ebtn" data-act="editcat" data-cid="${cat.id}">수정</button>
-            <div class="state-actions">
+            ${catFuture?"":`<div class="state-actions">
               <button class="failbtn ${getFailure(t,cat.id)?"active":""}" data-act="failcat" data-cid="${cat.id}" data-name="${esc(cat.name)}" data-can="${catDoes?1:0}">✕</button>
               <button class="chk ${ck?(isBad?"done-bad":"done"):""}" style="${chkStyle}" data-act="checkcat" data-cid="${cat.id}" data-can="${catDoes?1:0}">${ck?"✓":""}</button>
-            </div>
+            </div>`}
           </div>
         </div>`;
       } else {
@@ -1116,14 +1194,15 @@ function renderDetail(){
           html+=`<div class="subitems">`;
           for(const sub of cat.subs){
             const does=sd(sub.days,sub.freq||1,sub.start,t);
+            const subFuture=isFutureStart(sub.start,t);
             const ck=!!log[sub.id];
             const chkStyle=ck&&!isBad?`background:${cat.color};border-color:${cat.color}`:"";
-            html+=`<div class="subrow" style="${does?"":"opacity:.4"}">
-              <div class="state-actions">
+            html+=`<div class="subrow" style="${does&&!subFuture?"":"opacity:.4"}">
+              ${subFuture?"":`<div class="state-actions">
                 <button class="failbtn ${getFailure(t,sub.id)?"active":""}" data-act="failsub" data-cid="${cat.id}" data-sid="${sub.id}" data-name="${esc(sub.name)}" data-can="${does?1:0}">✕</button>
                 <button class="chk ${ck?(isBad?"done-bad":"done"):""}" style="${chkStyle}" data-act="checksub" data-cid="${cat.id}" data-sid="${sub.id}" data-can="${does?1:0}">${ck?"✓":""}</button>
-              </div>
-              <div class="sinfo"><div class="sname ${ck&&!isBad?"done":""}">${sub.name}</div>${getFailure(t,sub.id)?`<div class="failure-note"><b>실패:</b> ${esc((getFailure(t,sub.id).reasons||[]).join(", ")||"이유 미입력")}${getFailure(t,sub.id).memo?`<br>${esc(getFailure(t,sub.id).memo)}`:""}</div>`:""}</div>
+              </div>`}
+              <div class="sinfo"><div class="sname ${ck&&!isBad?"done":""}">${sub.name}${subFuture?` <span class="scheduled-badge">${scheduledText(sub.start,t)}</span>`:""}</div>${getFailure(t,sub.id)?`<div class="failure-note"><b>실패:</b> ${esc((getFailure(t,sub.id).reasons||[]).join(", ")||"이유 미입력")}${getFailure(t,sub.id).memo?`<br>${esc(getFailure(t,sub.id).memo)}`:""}</div>`:""}</div>
               <button class="ebtn" data-act="editsub" data-cid="${cat.id}" data-sid="${sub.id}">수정</button>
             </div>`;
           }
@@ -1162,7 +1241,7 @@ function renderDetail(){
 function checkMs(proj){
   // 마일스톤은 실제 달성일에만 표시 (D+1 이상)
   const day=dd(projectRealStart(proj),td())+1;
-  if(day<66)return;
+  if(targetIsFuture({kind:"project",proj})||day<66)return;
   if(!db.ms[proj.id])db.ms[proj.id]={};
   for(const ms of MS){
     if(day===ms.d&&!db.ms[proj.id][ms.d]){
@@ -1313,6 +1392,8 @@ document.getElementById("importok").onclick=()=>{
 };
 
 document.getElementById("mpdel").onclick=()=>{
+  const proj=db.p.find(p=>p.id===epid);
+  if(proj)removeItemHistory(collectItemIds(proj));
   db.p=db.p.filter(p=>p.id!==epid);
   sv();cm("mp");renderHome();
 };
@@ -1424,7 +1505,11 @@ document.getElementById("mcexport").onclick=()=>{
 
 document.getElementById("mcdel").onclick=()=>{
   const proj=db.p.find(p=>p.id===ecpid);
-  if(proj){proj.cats=proj.cats.filter(c=>c.id!==ecid);sv();}
+  if(proj){
+    const cat=proj.cats.find(c=>c.id===ecid);
+    if(cat)removeItemHistory(collectItemIds(cat));
+    proj.cats=proj.cats.filter(c=>c.id!==ecid);sv();
+  }
   cm("mc");
   if(curP===ecpid){
     document.getElementById("vd").innerHTML="";
@@ -1444,9 +1529,11 @@ function openSubModal(catId,subId=null){
   document.getElementById("msubt").textContent=sub?`${cat?.name} 수정`:`${cat?.name} 세부 습관`;
   document.getElementById("msubok").textContent=sub?"저장":"추가";
   document.getElementById("msubn").value=sub?sub.name:"";
+  document.getElementById("msubdt").value=sub?(sub.start||cat?.start||td()):td();
   setDays("msubdays",sub?(sub.days||[]):[]);
   const msubfrqEl=document.getElementById("msubfrq");
   if(msubfrqEl) selOpt(msubfrqEl, sub?sub.freq:1);
+  document.getElementById("msubdel").style.display=sub?"block":"none";
   om("msub");
 }
 document.getElementById("msubok").onclick=()=>{
@@ -1454,16 +1541,28 @@ document.getElementById("msubok").onclick=()=>{
   if(!name)return;
   const days=getDays("msubdays");
   const freq=parseInt(getOpt(document.getElementById("msubfrq"))||"1");
+  const start=document.getElementById("msubdt").value||td();
   const proj=db.p.find(p=>p.id===curP);
   const cat=proj?.cats.find(c=>c.id===escid);
   if(!cat)return;
   if(essid){
     const sub=cat.subs.find(s=>s.id===essid);
-    sub.name=name;sub.days=days;sub.freq=freq;
+    sub.name=name;sub.days=days;sub.freq=freq;sub.start=start;
   } else {
-    cat.subs.push({id:uid(),name,days,freq,start:td()});
+    const sub={id:uid(),name,days,freq,start};
+    cat.subs.push(sub);
+    fillPastSuccess(sub,start,days,freq);
     exp["c_"+escid]=true;
   }
+  sv();cm("msub");renderDetail();
+};
+document.getElementById("msubdel").onclick=()=>{
+  const proj=db.p.find(p=>p.id===curP);
+  const cat=proj?.cats.find(c=>c.id===escid);
+  const sub=cat?.subs.find(s=>s.id===essid);
+  if(!cat||!sub)return;
+  removeItemHistory(collectItemIds(sub));
+  cat.subs=cat.subs.filter(s=>s.id!==essid);
   sv();cm("msub");renderDetail();
 };
 
@@ -1504,7 +1603,8 @@ function renderStats(){
   const dm=new Date();
   const monthStart=[dm.getFullYear(),String(dm.getMonth()+1).padStart(2,"0"),"01"].join("-");
 
-  const projectRows=db.p.map(proj=>{
+  const futureProjects=db.p.filter(proj=>targetIsFuture({kind:"project",proj},today));
+  const projectRows=db.p.filter(proj=>!targetIsFuture({kind:"project",proj},today)).map(proj=>{
     const target={kind:"project",proj};
     const all=targetStats(target);
     const week=targetStats(target,weekStart,today);
@@ -1543,6 +1643,7 @@ function renderStats(){
         <div class="dashitem"><div class="dashlbl">총 완료 체크</div><div class="dashval">${totalDone}회</div></div>
       </div>
     </div>
+    ${futureProjects.length?`<div class="stcard"><div class="stpn" style="margin-bottom:8px">⏳ 시작 예정</div>${futureProjects.map(p=>`<div class="rankrow"><div class="rankname">${esc(p.name)}</div><div class="rankval" style="color:#fbbf24">${scheduledText(projectRealStart(p),today)}</div></div>`).join("")}</div>`:""}
 
     <div class="stcard">
       <div class="stpn" style="margin-bottom:8px">🏅 TOP 5</div>
@@ -1702,7 +1803,7 @@ function renderSettings(){
       </div>
       <div class="seti" onclick="localStorage.removeItem('${KEY}');location.reload()" style="cursor:pointer"><span class="setil" style="color:#f87171">데이터 초기화</span></div>
     </div>
-    <div style="text-align:center;padding:24px;color:var(--text3);font-size:12px">천 쑥과마늘 v7 JSON 백업 아이폰 대응</div>`;
+    <div style="text-align:center;padding:24px;color:var(--text3);font-size:12px">천 쑥과마늘 v8 시작일 완성본</div>`;
 }
 
 // 맨 위로 버튼
@@ -1764,7 +1865,7 @@ async function importJsonFile(event){
     const data=JSON.parse(text);
     if(!data || typeof data!=="object" || Array.isArray(data))throw new Error("invalid backup");
     if(!confirm("현재 데이터를 선택한 백업으로 바꿀까요?"))return;
-    db=data;
+    db=normalizeDb(data);
     sv();
     alert("백업을 복원했습니다.");
     location.reload();
@@ -1781,7 +1882,7 @@ function loadFromText(){
     const data=JSON.parse(document.getElementById("export-text").value);
     if(!data || typeof data!=="object" || Array.isArray(data))throw new Error("invalid backup");
     if(!confirm("현재 데이터를 붙여넣은 백업으로 바꿀까요?"))return;
-    db=data;sv();alert("백업을 복원했습니다.");location.reload();
+    db=normalizeDb(data);sv();alert("백업을 복원했습니다.");location.reload();
   }catch{alert("형식이 올바르지 않아요.");}
 }
 
@@ -1800,7 +1901,7 @@ async function syncToSupabase(){
 
 async function loadFromSupabase(){
   try{
-    const localDb=(()=>{try{return JSON.parse(localStorage.getItem(KEY));}catch{return null;}})();
+    const localDb=readLocalDb();
     const res=await fetch(`${SUPA_URL}/rest/v1/cheon_data?id=eq.main&select=data,updated_at`,{
       headers:{"apikey":SUPA_KEY,"Authorization":`Bearer ${SUPA_KEY}`}
     });
@@ -1817,14 +1918,14 @@ async function loadFromSupabase(){
 
     // 기존 버전처럼 로컬에 수정 시간이 없더라도 데이터가 있으면 먼저 보존한다.
     if(localHasData&&(!localTime||localTime>serverTime)){
-      db=localDb;
+      db=normalizeDb(localDb);
       if(!db.updatedAt)db.updatedAt=new Date().toISOString();
       localStorage.setItem(KEY,JSON.stringify(db));
       await syncToSupabase();
       return true;
     }
 
-    db=serverDb;
+    db=normalizeDb(serverDb);
     db.updatedAt=serverRow.updated_at||serverDb.updatedAt||new Date().toISOString();
     localStorage.setItem(KEY,JSON.stringify(db));
     return true;
@@ -1839,11 +1940,11 @@ initDayPickers();
   try{
     const loaded=await loadFromSupabase();
     if(!loaded){
-      db=(()=>{try{return JSON.parse(localStorage.getItem(KEY))||{p:[],logs:{},ms:{}};}catch{return{p:[],logs:{},ms:{}};}})();
+      db=normalizeDb(readLocalDb());
     }
   }catch(e){
     console.log("supabase init error",e);
-    db=(()=>{try{return JSON.parse(localStorage.getItem(KEY))||{p:[],logs:{},ms:{}};}catch{return{p:[],logs:{},ms:{}};}})();
+    db=normalizeDb(readLocalDb());
   }
   renderHome();
 })();
