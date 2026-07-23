@@ -619,10 +619,10 @@ function dayStatus(target,date){
 }
 
 // 현재 연속: 오늘이 아직 미완료면 오늘은 보류하고 어제까지의 연속을 유지
-function currentStreak(target){
-  if(targetIsFuture(target))return 0;
+function currentStreak(target,endDate=td()){
+  if(targetIsFuture(target,endDate))return 0;
   let s=0;
-  let d=new Date();
+  let d=new Date(endDate+"T00:00:00");
   let firstScheduled=true;
 
   for(let i=0;i<1500;i++){
@@ -634,7 +634,7 @@ function currentStreak(target){
       continue;
     }
 
-    if(firstScheduled && k===td() && !st.complete){
+    if(firstScheduled && endDate===td() && k===td() && !st.complete){
       firstScheduled=false;
       d.setDate(d.getDate()-1);
       continue;
@@ -648,9 +648,9 @@ function currentStreak(target){
   return s;
 }
 
-function bestStreak(target){
+function bestStreak(target,endDate=td()){
   const start=targetStart(target);
-  const end=td();
+  const end=endDate;
   let cur=0,best=0;
   for(let k=start;k<=end;k=addDays(k,1)){
     const st=dayStatus(target,k);
@@ -1596,7 +1596,8 @@ function renderStats(){
   }
 
   const today=td();
-  const d7=new Date();
+  const statsCutoff=addDays(today,-1);
+  const d7=new Date(statsCutoff+"T00:00:00");
   d7.setDate(d7.getDate()-6);
   const weekStart=localKey(d7);
 
@@ -1604,13 +1605,13 @@ function renderStats(){
   const monthStart=[dm.getFullYear(),String(dm.getMonth()+1).padStart(2,"0"),"01"].join("-");
 
   const futureProjects=db.p.filter(proj=>targetIsFuture({kind:"project",proj},today));
-  const projectRows=db.p.filter(proj=>!targetIsFuture({kind:"project",proj},today)).map(proj=>{
+  const projectRows=db.p.filter(proj=>!targetIsFuture({kind:"project",proj},statsCutoff)).map(proj=>{
     const target={kind:"project",proj};
-    const all=targetStats(target);
-    const week=targetStats(target,weekStart,today);
-    const month=targetStats(target,monthStart,today);
-    const cur=currentStreak(target);
-    const best=bestStreak(target);
+    const all=targetStats(target,null,statsCutoff);
+    const week=targetStats(target,weekStart,statsCutoff);
+    const month=targetStats(target,monthStart,statsCutoff);
+    const cur=currentStreak(target,statsCutoff);
+    const best=bestStreak(target,statsCutoff);
     return {proj,target,all,week,month,cur,best};
   });
 
@@ -1623,7 +1624,7 @@ function renderStats(){
 
   const monthlyFailureCounts={};
   for(const row of projectRows){
-    mergeCounts(monthlyFailureCounts,failureCounts(row.target,monthStart,today));
+    mergeCounts(monthlyFailureCounts,failureCounts(row.target,monthStart,statsCutoff));
   }
   const failureTop=Object.entries(monthlyFailureCounts)
     .sort((a,b)=>b[1]-a[1] || a[0].localeCompare(b[0]))
@@ -1659,12 +1660,12 @@ function renderStats(){
 
   for(const row of projectRows){
     const {proj,target,all,week,month,cur,best}=row;
-    const sm=statusMessage(target,today);
-    const projDay=dd(projectRealStart(proj),today)+1;
+    const sm=statusMessage(target,statsCutoff);
+    const projDay=dd(projectRealStart(proj),statsCutoff)+1;
 
     const recent=[];
     for(let i=6;i>=0;i--){
-      const d=new Date();
+      const d=new Date(statsCutoff+"T00:00:00");
       d.setDate(d.getDate()-i);
       const k=localKey(d);
       const st=dayStatus(target,k);
@@ -1679,10 +1680,10 @@ function renderStats(){
     if(proj.cats && proj.cats.length){
       catHtml=proj.cats.map(cat=>{
         const ct={kind:"category",proj,cat};
-        const cs=targetStats(ct);
-        const ccur=currentStreak(ct);
-        const cbest=bestStreak(ct);
-        const csm=statusMessage(ct,today);
+        const cs=targetStats(ct,null,statsCutoff);
+        const ccur=currentStreak(ct,statsCutoff);
+        const cbest=bestStreak(ct,statsCutoff);
+        const csm=statusMessage(ct,statsCutoff);
         return `<div class="catstat">
           <div class="catstathead">
             <div class="cbar" style="background:${cat.color};height:15px"></div>
